@@ -125,7 +125,7 @@ public class MainActivity extends Activity {
 	}
 	
 	private boolean isSubAction(String action) {
-		return action == ACTION_ADD_LIBRARY;
+		return action == ACTION_ADD_LIBRARY || action == ACTION_START_ON_BOOT;
 	}
 	
 	public int paste() {
