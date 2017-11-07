@@ -15,7 +15,7 @@ public class GameBridgeService extends Service implements Handler.Callback {
 	private Handler mHandler = new Handler(this);
 	
 	private static Callback mCallback;
-	private static ArrayList<Message> mQueue = (ArrayList<Message>) Collections.synchronizedList(new ArrayList<Message>());
+	private static List<Message> mQueue = Collections.synchronizedList(new ArrayList<Message>());
 	public static GameBridgeService instance = null;
 	
 	@Override
