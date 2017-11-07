@@ -76,7 +76,6 @@ public class MainActivity extends Activity {
 					}
 				});
 		} else {
-			GameBridgeService.setCallback(gbsCallback);
 			ScriptManager.startScript(this);
 		}
 	}
@@ -144,7 +143,7 @@ public class MainActivity extends Activity {
 
 	public void setBridgeListener(BridgeListener bridgeListener) {
 		this.mBridgeListener = bridgeListener;
-		if (GameBridgeService.isConnected()) bridgeListener.onRemoteEnabled();
+		GameBridgeService.setCallback(gbsCallback);
 	}
 	
 	public void setLoadingTitle(String title) {

@@ -3,6 +3,7 @@ package com.xero.ca;
 import android.app.*;
 import android.content.*;
 import android.os.*;
+import java.util.*;
 
 public class GameBridgeService extends Service implements Handler.Callback {
 	public interface Callback {
@@ -14,6 +15,7 @@ public class GameBridgeService extends Service implements Handler.Callback {
 	private Handler mHandler = new Handler(this);
 	
 	private static Callback mCallback;
+	private static ArrayList<Message> mQueue = (ArrayList<Message>) Collections.synchronizedList(new ArrayList<Message>());
 	public static GameBridgeService instance = null;
 	
 	@Override
@@ -30,18 +32,30 @@ public class GameBridgeService extends Service implements Handler.Callback {
 	@Override
 	public boolean onUnbind(Intent intent) {
 		instance = null;
+		mQueue.clear();
 		if (mCallback != null) mCallback.onRemoteDisabled();
 		return super.onUnbind(intent);
 	}
 	
 	@Override
 	public boolean handleMessage(Message msg) {
-		if (mCallback != null) mCallback.onRemoteMessage(msg);	
+		if (mCallback != null) {
+			mCallback.onRemoteMessage(msg);
+		} else {
+			mQueue.add(msg);
+		}
 		return false;
 	}
 	
 	public static void setCallback(Callback c) {
 		mCallback = c;
+		if (isConnected()) c.onRemoteEnabled();
+		if (mQueue.size() > 0) {
+			for (Message e : mQueue) {
+				c.onRemoteMessage(e);
+			}
+			mQueue.clear();
+		}
 	}
 	
 	public static void removeCallback() {
