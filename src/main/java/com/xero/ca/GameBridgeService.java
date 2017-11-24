@@ -23,7 +23,7 @@ public class GameBridgeService extends Service implements Handler.Callback {
 		if (instance != null) return null;
 		instance = this;
 		if (MainActivity.instance == null) {
-			startActivity(new Intent(this, MainActivity.class).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK));
+			startActivity(new Intent(this, MainActivity.class).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_FROM_BACKGROUND));
 		}
 		if (mCallback != null) mCallback.onRemoteEnabled();
 		return new Messenger(mHandler).getBinder();

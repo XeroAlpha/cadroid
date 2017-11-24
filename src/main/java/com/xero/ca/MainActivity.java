@@ -6,6 +6,7 @@ import android.graphics.*;
 import android.os.*;
 import android.widget.*;
 import android.util.*;
+import android.view.*;
 
 public class MainActivity extends Activity {
 	public static final String ACTION_ADD_LIBRARY = "com.xero.ca.ADD_LIBRARY";
@@ -51,7 +52,7 @@ public class MainActivity extends Activity {
 	public interface BridgeListener {
 		public boolean applyIntent(Intent intent);
 		public void onNewIntent(Intent intent);
-		//public void onCallUnload();
+		public void onKeyEvent(KeyEvent event);
 		public void onRemoteEnabled();
 		public void onRemoteMessage(Message msg);
 		public void onRemoteDisabled();
@@ -129,7 +130,9 @@ public class MainActivity extends Activity {
 	
 	public int paste() {
 		try {
-			int paste = AccessibilitySvc.paste();
+			AccessibilitySvc svc = AccessibilitySvc.getInstance();
+			if (svc == null) return -2;
+			int paste = svc.paste();
 			if (paste >= 0) {
 				return 0;
 			}
@@ -199,8 +202,22 @@ public class MainActivity extends Activity {
 
 	@Override
 	public void startActivity(Intent intent) {
-		if (this.mBridgeListener == null || this.mBridgeListener.applyIntent(intent)) {
+		if (mBridgeListener == null || this.mBridgeListener.applyIntent(intent)) {
 			super.startActivity(intent);
 		}
+	}
+	
+	public void notifyKeyEvent(KeyEvent e) {
+		if (mBridgeListener != null) {
+			mBridgeListener.onKeyEvent(e);
+		}
+	}
+	
+	public AccessibilitySvc getAccessibilitySvc() {
+		return AccessibilitySvc.getInstance();
+	}
+	
+	public void goToAccessibilitySetting() {
+		AccessibilitySvc.goToAccessibilitySetting(this);
 	}
 }
