@@ -28,7 +28,7 @@ public class ScriptManager {
 					scope = cx.initStandardObjects();
 					scope.put("ScriptActivity", scope, ctx);
 					try {
-						cx.evaluateReader(scope, new InputStreamReader(new GZIPInputStream(ctx.getAssets().open("script.js"))), "命令助手", 0, null);
+						cx.evaluateReader(scope, new InputStreamReader(new ScriptFileStream(ctx, "script.js")), "命令助手", 0, null);
 					} catch (Exception e) {
 						showError(ctx, e);
 						return;
