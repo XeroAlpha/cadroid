@@ -6,6 +6,8 @@ import android.os.*;
 import java.util.*;
 
 public class GameBridgeService extends Service implements Handler.Callback {
+	public static final int REQUEST_CODE = 1;
+	
 	public interface Callback {
 		public void onRemoteEnabled();
 		public void onRemoteMessage(Message msg);
@@ -23,7 +25,7 @@ public class GameBridgeService extends Service implements Handler.Callback {
 		if (instance != null) return null;
 		instance = this;
 		if (MainActivity.instance == null) {
-			startActivity(new Intent(this, MainActivity.class).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_FROM_BACKGROUND));
+			runMain();
 		}
 		if (mCallback != null) mCallback.onRemoteEnabled();
 		return new Messenger(mHandler).getBinder();
@@ -64,5 +66,14 @@ public class GameBridgeService extends Service implements Handler.Callback {
 	
 	public static boolean isConnected() {
 		return instance != null;
+	}
+	
+	private void runMain() {
+		/*
+		Intent i = new Intent(this, MainActivity.class).setAction(MainActivity.ACTION_START_FROM_BACKGROUND).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_FROM_BACKGROUND);
+		startActivity(i);
+		*BUG：从适配器打开时，适配器所在Activity闪退
+		 java.lang.RuntimeException: Performing stop of activity that is not resumed: {com.xero.ca/com.xero.ca.MainActivity}
+		*/
 	}
 }

@@ -12,6 +12,8 @@ public class MainActivity extends Activity {
 	public static final String ACTION_ADD_LIBRARY = "com.xero.ca.ADD_LIBRARY";
 	public static final String ACTION_EDIT_COMMAND = "com.xero.ca.EDIT_COMMAND";
 	public static final String ACTION_START_ON_BOOT = "com.xero.ca.START_ON_BOOT";
+	public static final String ACTION_START_FROM_BACKGROUND = "com.xero.ca.ACTION_START_FROM_BACKGROUND";
+	public static final String ACTION_START_FROM_SHORTCUT = "com.xero.ca.ACTION_START_FROM_SHORTCUT";
 	
 	public static final String ACTION_SHOW_DEBUG = "com.xero.ca.SHOW_DEBUG";
 	
@@ -125,7 +127,7 @@ public class MainActivity extends Activity {
 	}
 	
 	private boolean isSubAction(String action) {
-		return action == ACTION_ADD_LIBRARY || action == ACTION_START_ON_BOOT;
+		return action == ACTION_ADD_LIBRARY || action == ACTION_START_ON_BOOT || action == ACTION_START_FROM_BACKGROUND;
 	}
 	
 	public int paste() {
