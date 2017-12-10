@@ -30,7 +30,7 @@ public class ScriptManager {
 					try {
 						cx.evaluateReader(scope, new InputStreamReader(new ScriptFileStream(ctx, "script.js")), "命令助手", 0, null);
 					} catch (Exception e) {
-						showError(ctx, e);
+						showError(ctx, new SecurityException("Fail to decode and execute the script.", e));
 						return;
 					}
 					handler = new Handler();
@@ -88,7 +88,9 @@ public class ScriptManager {
 						.setMessage(s.toString())
 						.setPositiveButton("关闭", new DialogInterface.OnClickListener() {
 							@Override
-							public void onClick(DialogInterface p1, int p2) {}
+							public void onClick(DialogInterface p1, int p2) {
+								ctx.finish();
+							}
 						})
 						.show();
 				}
