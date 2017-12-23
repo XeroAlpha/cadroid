@@ -53,6 +53,7 @@ public class MainActivity extends Activity {
 
 	public interface BridgeListener {
 		public boolean applyIntent(Intent intent);
+		public void onActivityResult(int requestCode, int resultCode, Intent data);
 		public void onNewIntent(Intent intent);
 		public void onKeyEvent(KeyEvent event);
 		public void onRemoteEnabled();
@@ -95,6 +96,11 @@ public class MainActivity extends Activity {
 	protected void onNewIntent(Intent intent) {
 		setIntent(intent);
 		if (mBridgeListener != null) mBridgeListener.onNewIntent(intent);
+	}
+
+	@Override
+	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+		if (mBridgeListener != null) mBridgeListener.onActivityResult(requestCode, resultCode, data);
 	}
 
 	@Override
@@ -206,6 +212,13 @@ public class MainActivity extends Activity {
 	public void startActivity(Intent intent) {
 		if (mBridgeListener == null || this.mBridgeListener.applyIntent(intent)) {
 			super.startActivity(intent);
+		}
+	}
+
+	@Override
+	public void startActivityForResult(Intent intent, int requestCode) {
+		if (mBridgeListener == null || this.mBridgeListener.applyIntent(intent)) {
+			super.startActivityForResult(intent, requestCode);
 		}
 	}
 	
