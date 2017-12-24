@@ -16,6 +16,7 @@ public class MainActivity extends Activity {
 	public static final String ACTION_START_FROM_SHORTCUT = "com.xero.ca.ACTION_START_FROM_SHORTCUT";
 	
 	public static final String ACTION_SHOW_DEBUG = "com.xero.ca.SHOW_DEBUG";
+	public static final String ACTION_DEBUG_EXEC = "com.xero.ca.DEBUG_EXEC";
 	
 	public static final String SETTING_HIDE_SPLASH = "hideSplash";
 	public static final String SETTING_HIDE_NOTIFICATION = "hideNotification";
@@ -80,6 +81,12 @@ public class MainActivity extends Activity {
 					}
 				});
 		} else {
+			Intent i = getIntent();
+			if (i.getAction() == ACTION_DEBUG_EXEC && BuildConfig.DEBUG) {
+				ScriptManager.setDebugFile(i.getData().getPath());
+			} else {
+				ScriptManager.setDebugFile(null);
+			}
 			ScriptManager.startScript(this);
 		}
 	}

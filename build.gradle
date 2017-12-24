@@ -8,8 +8,8 @@ android {
         applicationId "com.xero.ca"
         minSdkVersion 14
         targetSdkVersion 21
-        versionCode 17523
-        versionName "2017-12-23"
+        versionCode 17524
+        versionName "2017-12-24"
     }
     buildTypes {
         release {
