@@ -8,6 +8,7 @@ import android.view.accessibility.*;
 
 public class AccessibilitySvc extends AccessibilityService {
 	private static AccessibilitySvc instance = null;
+	private static ServiceLifeCycleListener mLifeCycleListener = null;
 
 	public static void goToAccessibilitySetting(Context context) {
 		context.startActivity(new Intent(Settings.ACTION_ACCESSIBILITY_SETTINGS)
@@ -44,9 +45,10 @@ public class AccessibilitySvc extends AccessibilityService {
 	}
 
 	@Override
-	protected void onServiceConnected() {
+	public void onCreate() {
 		instance = this;
-		super.onServiceConnected();
+		super.onCreate();
+		if (mLifeCycleListener != null) mLifeCycleListener.onCreate();
 	}
 
 	@Override
@@ -54,6 +56,7 @@ public class AccessibilitySvc extends AccessibilityService {
 		if (instance == this) {
 			instance = null;
 		}
+		if (mLifeCycleListener != null) mLifeCycleListener.onDestroy();
 		super.onDestroy();
 	}
 	
@@ -65,5 +68,14 @@ public class AccessibilitySvc extends AccessibilityService {
 		if (!node.isEditable()) return 1;
 		if (!node.performAction(AccessibilityNodeInfo.ACTION_PASTE)) return 4;
 		return 0;
+	}
+	
+	public static void setLifeCycleListener(ServiceLifeCycleListener mListener) {
+		mLifeCycleListener = mListener;
+	}
+	
+	public interface ServiceLifeCycleListener {
+		public void onCreate()
+		public void onDestroy()
 	}
 }

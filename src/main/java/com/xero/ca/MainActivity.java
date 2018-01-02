@@ -45,6 +45,17 @@ public class MainActivity extends Activity {
 		}	
 	};
 	
+	private AccessibilitySvc.ServiceLifeCycleListener acsCallback = new AccessibilitySvc.ServiceLifeCycleListener() {
+		@Override
+		public void onCreate() {
+			if (mBridgeListener != null) mBridgeListener.onAccessibilitySvcCreate();
+		}
+		@Override
+		public void onDestroy() {
+			if (mBridgeListener != null) mBridgeListener.onAccessibilitySvcDestroy();
+		}
+	};
+	
 	private ServiceConnection scv = new ServiceConnection() {
 		@Override
 		public void onServiceConnected(ComponentName p1, IBinder p2) {}
@@ -54,6 +65,8 @@ public class MainActivity extends Activity {
 
 	public interface BridgeListener {
 		public boolean applyIntent(Intent intent);
+		public void onAccessibilitySvcCreate()
+		public void onAccessibilitySvcDestroy()
 		public void onActivityResult(int requestCode, int resultCode, Intent data);
 		public void onNewIntent(Intent intent);
 		public void onKeyEvent(KeyEvent event);
@@ -135,6 +148,7 @@ public class MainActivity extends Activity {
 		hideNotification();
 		mShowNotification = false;
 		GameBridgeService.removeCallback();
+		AccessibilitySvc.setLifeCycleListener(null);
 		ScriptManager.endScript(false);
 		super.onDestroy();
 	}
@@ -162,6 +176,7 @@ public class MainActivity extends Activity {
 	public void setBridgeListener(BridgeListener bridgeListener) {
 		this.mBridgeListener = bridgeListener;
 		GameBridgeService.setCallback(gbsCallback);
+		AccessibilitySvc.setLifeCycleListener(acsCallback);
 	}
 	
 	public void setLoadingTitle(String title) {
