@@ -68,7 +68,8 @@ public class ScriptManager {
 	}
 	
 	public static Context initContext() {
-		Context context = Context.enter();
+		//Context context = Context.enter();
+		Context context = new com.faendir.rhino_android.RhinoAndroidHelper().enterContext();
 		context.setOptimizationLevel(-1);
 		context.seal(sealKey);
 		return context;
