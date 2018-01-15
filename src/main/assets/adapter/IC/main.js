@@ -29,7 +29,7 @@ var Adapter = {
 			Adapter.onConnected(cn, binder);
 		},
 		onServiceDisconnected : function(cn) {
-			Adapter.onDisconnected(cn, binder);
+			Adapter.onDisconnected(cn);
 		}
 	}),
 	handler : new android.os.Handler.Callback({
@@ -67,6 +67,7 @@ var Adapter = {
 		this.send(function(bundle) {
 			bundle.putString("action", "init");
 			bundle.putString("platform", self.clientName);
+			bundle.putInt("version", 1);
 		});
 		this.send(function(bundle) {
 			bundle.putString("action", "resetMCV");
@@ -79,7 +80,7 @@ var Adapter = {
 		var bundle = new android.os.Bundle();
 		msg.what = 1;
 		msg.replyTo = this.client;
-		bundle.putString("pid", this.pid);
+		bundle.putInt("pid", this.pid);
 		f(bundle);
 		msg.setData(bundle);
 		this.remote.send(msg);
