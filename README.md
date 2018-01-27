@@ -1,6 +1,6 @@
 # 命令助手Android
 ## 简介
-命令助手Android是[命令助手](https://gitee.com/projectxero/cadroid)的App版本，增加了命令助手的功能，如一键粘贴、适配器、从文件管理器加载命令库等。
+命令助手Android是[命令助手](https://gitee.com/projectxero/ca)的App版本，增加了命令助手的功能，如一键粘贴、适配器、从文件管理器加载命令库等。
 
 ### 增加特性
 * 支持无障碍服务，提供粘贴与监听非打印按键接口
