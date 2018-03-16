@@ -22,7 +22,6 @@ public class ScriptManager {
 		if (handler != null) return;
 		bindActivity = ctx;
 		Thread th = new Thread(Thread.currentThread().getThreadGroup(), new StartCommand(), "CA_Loader", 262144);
-		th.setDefaultUncaughtExceptionHandler(new CrashListener());
 		th.start();
 	}
 
@@ -45,26 +44,6 @@ public class ScriptManager {
 		if (obj != null && obj instanceof Function) {
 			((Function) obj).call(cx, scope, scope, args);
 		}
-	}
-
-	public static void showError(final Activity ctx, final Throwable e) {
-		ctx.runOnUiThread(new Runnable() {
-				@Override
-				public void run() {
-					StringWriter s = new StringWriter();
-					e.printStackTrace(new PrintWriter(s));
-					new AlertDialog.Builder(ctx)
-						.setTitle("Error")
-						.setMessage(s.toString())
-						.setPositiveButton("关闭", new DialogInterface.OnClickListener() {
-							@Override
-							public void onClick(DialogInterface p1, int p2) {
-								ctx.finish();
-							}
-						})
-						.show();
-				}
-			});
 	}
 	
 	public static Context initContext() {
@@ -90,13 +69,6 @@ public class ScriptManager {
 		return new InputStreamReader(new ScriptFileStream(bindActivity, "script.js"));
 	}
 	
-	static class CrashListener implements Thread.UncaughtExceptionHandler {
-		@Override
-		public void uncaughtException(Thread t, Throwable e) {
-			showError(bindActivity, e);
-		}
-	}
-	
 	static class StartCommand implements Runnable {
 		@Override
 		public void run() {
@@ -106,7 +78,7 @@ public class ScriptManager {
 			try {
 				cx.evaluateReader(scope, getScriptReader(), "命令助手", 0, null);
 			} catch (Exception e) {
-				showError(bindActivity, new SecurityException("Fail to decode and execute the script.", e));
+				XApplication.reportError(bindActivity.getApplicationContext(), Thread.currentThread(), new SecurityException("Fail to decode and execute the script.", e));
 				return;
 			}
 			handler = new Handler();

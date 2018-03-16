@@ -168,7 +168,7 @@ public class MainActivity extends Activity {
 			AccessibilitySvc.goToAccessibilitySetting(this);
 			return paste;
 		} catch (Throwable e) {
-			ScriptManager.showError(this, e);
+			Log.e("CA", "Paste Error", e);
 			return -1;
 		}
 	}
