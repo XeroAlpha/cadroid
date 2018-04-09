@@ -12,33 +12,48 @@ public class ScriptManager {
 	private final static class SealKey {}
 	public final static Object sealKey = new SealKey();
 	
-	private static Context cx = null;
-	private static Scriptable scope = null;
-	private static Handler handler = null;
-	private static Activity bindActivity = null;
-	private static String debugFile = null;
+	private static ScriptManager instance;
+	
+	private Context cx = null;
+	private Scriptable scope = null;
+	private Handler handler = null;
+	private Activity bindActivity = null;
+	private String debugFile = null;
+	
+	public static ScriptManager getInstance() {
+		if (instance == null) {
+			instance = new ScriptManager();
+		}
+		return instance;
+	}
+	
+	public static ScriptManager createDebuggable(String debugFile) {
+		ScriptManager r = new ScriptManager();
+		r.debugFile = debugFile;
+		return r;
+	}
 
-	public static void startScript(final Activity ctx) {
+	public void startScript(Activity ctx) {
 		if (handler != null) return;
 		bindActivity = ctx;
 		Thread th = new Thread(Thread.currentThread().getThreadGroup(), new StartCommand(), "CA_Loader", 262144);
 		th.start();
 	}
 
-	public static void endScript(final boolean callUnload) {
+	public void endScript(boolean callUnload) {
 		if (handler == null) return;
 		handler.post(new ExitCommand(callUnload));
 	}
 	
-	public static void endScript() {
+	public void endScript() {
 		endScript(true);
 	}
 	
-	public static boolean isRunning() {
+	public boolean isRunning() {
 		return handler != null;
 	}
 
-	public static void callScriptHook(String name, Object[] args) {
+	public void callScriptHook(String name, Object[] args) {
 		if (handler == null) return;
 		Object obj = scope.get(name, scope);
 		if (obj != null && obj instanceof Function) {
@@ -46,7 +61,7 @@ public class ScriptManager {
 		}
 	}
 	
-	public static Context initContext() {
+	public Context initContext() {
 		//Context context = Context.enter();
 		Context context = new com.faendir.rhino_android.RhinoAndroidHelper().enterContext();
 		context.setOptimizationLevel(-1);
@@ -54,22 +69,22 @@ public class ScriptManager {
 		return context;
 	}
 	
-	public static Scriptable initScope(Context cx) {
+	public Scriptable initScope(Context cx) {
 		Scriptable s = cx.initStandardObjects();
 		s.put("ScriptActivity", s, bindActivity);
 		return s;
 	}
 	
-	public static void setDebugFile(String path) {
+	public void setDebugFile(String path) {
 		debugFile = path;
 	}
 	
-	public static Reader getScriptReader() throws IOException {
+	public Reader getScriptReader() throws IOException {
 		if (debugFile != null) return new FileReader(debugFile);
 		return new InputStreamReader(new ScriptFileStream(bindActivity, "script.js"));
 	}
 	
-	static class StartCommand implements Runnable {
+	class StartCommand implements Runnable {
 		@Override
 		public void run() {
 			Looper.prepare();
@@ -90,7 +105,7 @@ public class ScriptManager {
 		}
 	}
 	
-	static class ExitCommand implements Runnable {
+	class ExitCommand implements Runnable {
 		boolean callUnload;
 		ExitCommand(boolean callUnload) {
 			this.callUnload = callUnload;

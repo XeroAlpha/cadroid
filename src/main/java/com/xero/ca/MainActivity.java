@@ -2,11 +2,9 @@ package com.xero.ca;
 
 import android.app.*;
 import android.content.*;
-import android.graphics.*;
 import android.os.*;
-import android.widget.*;
-import android.util.*;
 import android.view.*;
+import android.widget.*;
 
 public class MainActivity extends Activity {
 	public static final String ACTION_ADD_LIBRARY = "com.xero.ca.ADD_LIBRARY";
@@ -26,6 +24,7 @@ public class MainActivity extends Activity {
 	
 	public static MainActivity instance;
 	
+	private ScriptManager mManager;
 	private BridgeListener mBridgeListener;
 	private SharedPreferences mPreferences;
 	private boolean mShowNotification;
@@ -79,6 +78,7 @@ public class MainActivity extends Activity {
 	protected void onCreate(Bundle bundle) {
 		mPreferences = getSharedPreferences(PREFERENCE_NAME, MODE_PRIVATE);
 		instance = this;
+		showNotification();
 		if (getHideSplash() || isSubAction(getIntent().getAction())) {
 			onBackPressed();
 		} else {
@@ -86,7 +86,13 @@ public class MainActivity extends Activity {
 			setContentView(R.layout.main);
 		}
 		super.onCreate(bundle);
-		if (ScriptManager.isRunning()) {
+		Intent i = getIntent();
+		if (i.getAction() == ACTION_DEBUG_EXEC && BuildConfig.DEBUG) {
+			mManager = ScriptManager.createDebuggable(i.getData().getPath());
+		} else {
+			mManager = ScriptManager.getInstance();
+		}
+		if (mManager.isRunning()) {
 			new Handler().post(new Runnable() {
 					@Override
 					public void run() {
@@ -94,13 +100,8 @@ public class MainActivity extends Activity {
 					}
 				});
 		} else {
-			Intent i = getIntent();
-			if (i.getAction() == ACTION_DEBUG_EXEC && BuildConfig.DEBUG) {
-				ScriptManager.setDebugFile(i.getData().getPath());
-			} else {
-				ScriptManager.setDebugFile(null);
-			}
-			ScriptManager.startScript(this);
+			clearBridgeListener();
+			mManager.startScript(this);
 		}
 	}
 	
@@ -129,54 +130,28 @@ public class MainActivity extends Activity {
 	}
 
 	@Override
-	protected void onPause() {
-		mShowNotification = true;
-		showNotification();
-		super.onPause();
-	}
-
-	@Override
-	protected void onResume() {
-		mShowNotification = false;
-		hideNotification();
-		super.onResume();
-	}
-
-	@Override
 	protected void onDestroy() {
 		instance = null;
 		hideNotification();
-		mShowNotification = false;
-		GameBridgeService.removeCallback();
-		AccessibilitySvc.setLifeCycleListener(null);
-		ScriptManager.endScript(false);
+		clearBridgeListener();
+		mManager.endScript(false);
 		super.onDestroy();
 	}
 	
 	private boolean isSubAction(String action) {
 		return action == ACTION_ADD_LIBRARY || action == ACTION_START_ON_BOOT || action == ACTION_START_FROM_BACKGROUND;
 	}
-	
-	public int paste() {
-		try {
-			AccessibilitySvc svc = AccessibilitySvc.getInstance();
-			if (svc == null) return -2;
-			int paste = svc.paste();
-			if (paste >= 0) {
-				return 0;
-			}
-			AccessibilitySvc.goToAccessibilitySetting(this);
-			return paste;
-		} catch (Throwable e) {
-			Log.e("CA", "Paste Error", e);
-			return -1;
-		}
-	}
 
 	public void setBridgeListener(BridgeListener bridgeListener) {
-		this.mBridgeListener = bridgeListener;
+		mBridgeListener = bridgeListener;
 		GameBridgeService.setCallback(gbsCallback);
 		AccessibilitySvc.setLifeCycleListener(acsCallback);
+	}
+	
+	public void clearBridgeListener() {
+		mBridgeListener = null;
+		GameBridgeService.removeCallback();
+		AccessibilitySvc.setLifeCycleListener(null);
 	}
 	
 	public void setLoadingTitle(String title) {
@@ -215,6 +190,7 @@ public class MainActivity extends Activity {
 	}
 	
 	public void showNotification() {
+		mShowNotification = true;
 		if (getHideNotification()) return;
 		if (KeeperService.instance != null) return;
 		
@@ -226,6 +202,7 @@ public class MainActivity extends Activity {
 	}
 	
 	public void hideNotification() {
+		mShowNotification = false;
 		if (KeeperService.instance == null) return;
 		unbindService(scv);
 	}
@@ -256,5 +233,9 @@ public class MainActivity extends Activity {
 	
 	public void goToAccessibilitySetting() {
 		AccessibilitySvc.goToAccessibilitySetting(this);
+	}
+	
+	public ScriptManager getScriptManager() {
+		return mManager;
 	}
 }

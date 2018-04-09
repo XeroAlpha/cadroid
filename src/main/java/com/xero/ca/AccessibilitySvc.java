@@ -70,6 +70,15 @@ public class AccessibilitySvc extends AccessibilityService {
 		return 0;
 	}
 	
+	public CharSequence getFocusEditableText() {
+		AccessibilityNodeInfo node = getRootInActiveWindow();
+		if (node == null) return null;
+		node = node.findFocus(AccessibilityNodeInfo.FOCUS_INPUT);
+		if (node == null) return null;
+		if (!node.isEditable()) return null;
+		return node.getText();
+	}
+	
 	public static void setLifeCycleListener(ServiceLifeCycleListener mListener) {
 		mLifeCycleListener = mListener;
 	}
