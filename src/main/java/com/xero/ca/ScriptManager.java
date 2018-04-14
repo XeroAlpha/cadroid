@@ -1,12 +1,8 @@
 package com.xero.ca;
 import android.app.*;
-import android.content.*;
-import java.io.*;
-import java.util.zip.*;
-import org.mozilla.javascript.*;
 import android.os.*;
-
-import org.mozilla.javascript.Context;
+import java.io.*;
+import org.mozilla.javascript.*;
 
 public class ScriptManager {
 	private final static class SealKey {}
