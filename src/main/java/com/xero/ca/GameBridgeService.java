@@ -4,6 +4,7 @@ import android.app.*;
 import android.content.*;
 import android.os.*;
 import java.util.*;
+import java.lang.ref.*;
 
 public class GameBridgeService extends Service implements Handler.Callback {
 	public static final int REQUEST_CODE = 1;
@@ -18,12 +19,12 @@ public class GameBridgeService extends Service implements Handler.Callback {
 	
 	private static Callback mCallback;
 	private static List<Message> mQueue = Collections.synchronizedList(new ArrayList<Message>());
-	public static GameBridgeService instance = null;
+	public static WeakReference<GameBridgeService> instance = new WeakReference<GameBridgeService>(null);
 	
 	@Override
 	public IBinder onBind(Intent intent) {
-		if (instance != null) return null;
-		instance = this;
+		if (instance.get() != null) return null;
+		instance = new WeakReference<GameBridgeService>(this);
 		if (MainActivity.instance == null) {
 			runMain();
 		}
@@ -33,7 +34,7 @@ public class GameBridgeService extends Service implements Handler.Callback {
 
 	@Override
 	public boolean onUnbind(Intent intent) {
-		instance = null;
+		instance.clear();
 		mQueue.clear();
 		if (mCallback != null) mCallback.onRemoteDisabled();
 		return super.onUnbind(intent);
@@ -65,7 +66,7 @@ public class GameBridgeService extends Service implements Handler.Callback {
 	}
 	
 	public static boolean isConnected() {
-		return instance != null;
+		return instance.get() != null;
 	}
 	
 	private void runMain() {

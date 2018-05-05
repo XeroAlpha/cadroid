@@ -5,6 +5,7 @@ import android.content.*;
 import android.os.*;
 import android.view.*;
 import android.widget.*;
+import java.lang.ref.*;
 
 public class MainActivity extends Activity {
 	public static final String ACTION_ADD_LIBRARY = "com.xero.ca.ADD_LIBRARY";
@@ -12,9 +13,12 @@ public class MainActivity extends Activity {
 	public static final String ACTION_START_ON_BOOT = "com.xero.ca.START_ON_BOOT";
 	public static final String ACTION_START_FROM_BACKGROUND = "com.xero.ca.ACTION_START_FROM_BACKGROUND";
 	public static final String ACTION_START_FROM_SHORTCUT = "com.xero.ca.ACTION_START_FROM_SHORTCUT";
+	public static final String ACTION_SCRIPT_ACTION = "com.xero.ca.ACTION_SCRIPT_ACTION";
 	
 	public static final String ACTION_SHOW_DEBUG = "com.xero.ca.SHOW_DEBUG";
 	public static final String ACTION_DEBUG_EXEC = "com.xero.ca.DEBUG_EXEC";
+	
+	public static final String SCHEME = "commandassist";
 	
 	public static final String SETTING_HIDE_SPLASH = "hideSplash";
 	public static final String SETTING_HIDE_NOTIFICATION = "hideNotification";
@@ -22,7 +26,7 @@ public class MainActivity extends Activity {
 	
 	public static final String PREFERENCE_NAME = "user_settings";
 	
-	public static MainActivity instance;
+	public static WeakReference<MainActivity> instance = new WeakReference<MainActivity>(null);
 	
 	private ScriptManager mManager;
 	private BridgeListener mBridgeListener;
@@ -77,7 +81,8 @@ public class MainActivity extends Activity {
 	@Override
 	protected void onCreate(Bundle bundle) {
 		mPreferences = getSharedPreferences(PREFERENCE_NAME, MODE_PRIVATE);
-		instance = this;
+		instance = new WeakReference<MainActivity>(this);
+		mShowNotification = false;
 		showNotification();
 		if (getHideSplash() || isSubAction(getIntent().getAction())) {
 			onBackPressed();
@@ -106,8 +111,8 @@ public class MainActivity extends Activity {
 	}
 	
 	public static void callIntent(Context ctx, Intent intent) {
-		if (instance != null) {
-			instance.onNewIntent(intent);
+		if (instance.get() != null) {
+			instance.get().onNewIntent(intent);
 		} else {
 			ctx.startActivity(intent);
 		}
@@ -131,7 +136,7 @@ public class MainActivity extends Activity {
 
 	@Override
 	protected void onDestroy() {
-		instance = null;
+		instance.clear();
 		hideNotification();
 		clearBridgeListener();
 		mManager.endScript(false);
@@ -190,9 +195,10 @@ public class MainActivity extends Activity {
 	}
 	
 	public void showNotification() {
+		if (mShowNotification) return;
 		mShowNotification = true;
 		if (getHideNotification()) return;
-		if (KeeperService.instance != null) return;
+		//if (KeeperService.instance != null) return;
 		
 		bindService(
 			new Intent(this, KeeperService.class),
@@ -202,8 +208,9 @@ public class MainActivity extends Activity {
 	}
 	
 	public void hideNotification() {
+		if (!mShowNotification) return;
 		mShowNotification = false;
-		if (KeeperService.instance == null) return;
+		//if (KeeperService.instance == null) return;
 		unbindService(scv);
 	}
 

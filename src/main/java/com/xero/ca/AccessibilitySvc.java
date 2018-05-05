@@ -5,9 +5,10 @@ import android.content.*;
 import android.provider.*;
 import android.view.*;
 import android.view.accessibility.*;
+import java.lang.ref.*;
 
 public class AccessibilitySvc extends AccessibilityService {
-	private static AccessibilitySvc instance = null;
+	private static WeakReference<AccessibilitySvc> instance = new WeakReference<AccessibilitySvc>(null);
 	private static ServiceLifeCycleListener mLifeCycleListener = null;
 
 	public static void goToAccessibilitySetting(Context context) {
@@ -16,15 +17,16 @@ public class AccessibilitySvc extends AccessibilityService {
 	}
 
 	public static AccessibilitySvc getInstance() {
-		return instance;
+		return instance.get();
 	}
 	
 	public static void notifyKeyEvent(final KeyEvent e) {
-		if (MainActivity.instance == null) return;
-		MainActivity.instance.runOnUiThread(new Runnable() {
+		if (MainActivity.instance.get() != null) return;
+		final MainActivity ins = MainActivity.instance.get();
+		ins.runOnUiThread(new Runnable() {
 				@Override
 				public void run() {
-					MainActivity.instance.notifyKeyEvent(e);
+					ins.notifyKeyEvent(e);
 				}
 			});
 	}
@@ -46,16 +48,14 @@ public class AccessibilitySvc extends AccessibilityService {
 
 	@Override
 	public void onCreate() {
-		instance = this;
+		instance = new WeakReference<AccessibilitySvc>(this);
 		super.onCreate();
 		if (mLifeCycleListener != null) mLifeCycleListener.onCreate();
 	}
 
 	@Override
 	public void onDestroy() {
-		if (instance == this) {
-			instance = null;
-		}
+		instance.clear();
 		if (mLifeCycleListener != null) mLifeCycleListener.onDestroy();
 		super.onDestroy();
 	}
