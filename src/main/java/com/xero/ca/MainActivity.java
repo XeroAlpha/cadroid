@@ -32,6 +32,7 @@ public class MainActivity extends Activity {
 	private BridgeListener mBridgeListener;
 	private SharedPreferences mPreferences;
 	private boolean mShowNotification;
+	private Intent mKeeperIntent;
 
 	private GameBridgeService.Callback gbsCallback = new GameBridgeService.Callback() {
 		@Override
@@ -57,13 +58,6 @@ public class MainActivity extends Activity {
 		public void onDestroy() {
 			if (mBridgeListener != null) mBridgeListener.onAccessibilitySvcDestroy();
 		}
-	};
-	
-	private ServiceConnection scv = new ServiceConnection() {
-		@Override
-		public void onServiceConnected(ComponentName p1, IBinder p2) {}
-		@Override
-		public void onServiceDisconnected(ComponentName p1) {}
 	};
 
 	public interface BridgeListener {
@@ -144,7 +138,10 @@ public class MainActivity extends Activity {
 	}
 	
 	private boolean isSubAction(String action) {
-		return action == ACTION_ADD_LIBRARY || action == ACTION_START_ON_BOOT || action == ACTION_START_FROM_BACKGROUND;
+		return  action == ACTION_ADD_LIBRARY ||
+				action == ACTION_START_ON_BOOT ||
+				action == ACTION_START_FROM_BACKGROUND ||
+				action == ACTION_SCRIPT_ACTION;
 	}
 
 	public void setBridgeListener(BridgeListener bridgeListener) {
@@ -199,19 +196,15 @@ public class MainActivity extends Activity {
 		mShowNotification = true;
 		if (getHideNotification()) return;
 		//if (KeeperService.instance != null) return;
-		
-		bindService(
-			new Intent(this, KeeperService.class),
-			scv,
-			BIND_AUTO_CREATE
-		);
+		mKeeperIntent = new Intent(this, KeeperService.class);
+		startService(mKeeperIntent);
 	}
 	
 	public void hideNotification() {
 		if (!mShowNotification) return;
 		mShowNotification = false;
 		//if (KeeperService.instance == null) return;
-		unbindService(scv);
+		stopService(mKeeperIntent);
 	}
 
 	@Override

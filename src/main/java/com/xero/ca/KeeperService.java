@@ -8,20 +8,24 @@ import android.net.*;
 
 public class KeeperService extends Service {
 	public static WeakReference<KeeperService> instance = new WeakReference<KeeperService>(null);
-	
+
 	@Override
-	public IBinder onBind(Intent intent) {
-		if (instance.get() != null) return null;
+	public void onCreate() {
 		instance = new WeakReference<KeeperService>(this);
 		showNotification();
-		return new Binder();
+		super.onCreate();
 	}
 
 	@Override
-	public boolean onUnbind(Intent intent) {
+	public void onDestroy() {
 		instance.clear();
 		hideNotification();
-		return super.onUnbind(intent);
+		super.onDestroy();
+	}
+	
+	@Override
+	public IBinder onBind(Intent intent) {
+		return null;
 	}
 	
 	public void showNotification() {
