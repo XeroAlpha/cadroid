@@ -204,7 +204,10 @@ public class MainActivity extends Activity {
 		if (!mShowNotification) return;
 		mShowNotification = false;
 		//if (KeeperService.instance == null) return;
-		stopService(mKeeperIntent);
+		if (mKeeperIntent != null) {
+			stopService(mKeeperIntent);
+			mKeeperIntent = null;
+		}
 	}
 
 	@Override
