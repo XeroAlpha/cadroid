@@ -15,8 +15,9 @@ public class ScriptManager {
 	private Handler handler = null;
 	private Activity bindActivity = null;
 	private String debugFile = null;
+	private boolean running = false;
 	
-	public static ScriptManager getInstance() {
+	public synchronized static ScriptManager getInstance() {
 		if (instance == null) {
 			instance = new ScriptManager();
 		}
@@ -29,15 +30,16 @@ public class ScriptManager {
 		return r;
 	}
 
-	public void startScript(Activity ctx) {
-		if (handler != null) return;
+	public synchronized void startScript(Activity ctx) {
+		if (running) return;
+		running = true;
 		bindActivity = ctx;
 		Thread th = new Thread(Thread.currentThread().getThreadGroup(), new StartCommand(), "CA_Loader", 262144);
 		th.start();
 	}
 
 	public void endScript(boolean callUnload) {
-		if (handler == null) return;
+		if (!running) return;
 		handler.post(new ExitCommand(callUnload));
 	}
 	
@@ -46,10 +48,10 @@ public class ScriptManager {
 	}
 	
 	public boolean isRunning() {
-		return handler != null;
+		return running;
 	}
 
-	public void callScriptHook(String name, Object[] args) {
+	public synchronized void callScriptHook(String name, Object[] args) {
 		if (handler == null) return;
 		Object obj = scope.get(name, scope);
 		if (obj != null && obj instanceof Function) {
@@ -57,11 +59,11 @@ public class ScriptManager {
 		}
 	}
 	
-	public Context initContext() {
+	public synchronized static Context initContext() {
 		//Context context = Context.enter();
 		Context context = new com.faendir.rhino_android.RhinoAndroidHelper().enterContext();
 		context.setOptimizationLevel(-1);
-		context.seal(sealKey);
+		//context.seal(sealKey);
 		return context;
 	}
 	
@@ -78,6 +80,11 @@ public class ScriptManager {
 	public Reader getScriptReader() throws IOException {
 		if (debugFile != null) return new FileReader(debugFile);
 		return new InputStreamReader(new ScriptFileStream(bindActivity, "script.js"));
+	}
+	
+	public void startDebug(File outputFile) throws FileNotFoundException {
+		Context x = Context.getCurrentContext();
+		cx.setDebugger(new ScriptDebugger(outputFile), null);
 	}
 	
 	class StartCommand implements Runnable {
@@ -98,6 +105,7 @@ public class ScriptManager {
 			cx = null;
 			scope = null;
 			handler = null;
+			running = false;
 		}
 	}
 	
