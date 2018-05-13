@@ -5,9 +5,6 @@ import java.io.*;
 import org.mozilla.javascript.*;
 
 public class ScriptManager {
-	private final static class SealKey {}
-	public final static Object sealKey = new SealKey();
-	
 	private static ScriptManager instance;
 	
 	private Context cx = null;
@@ -15,6 +12,7 @@ public class ScriptManager {
 	private Handler handler = null;
 	private Activity bindActivity = null;
 	private String debugFile = null;
+	private String logFile = null;
 	private boolean running = false;
 	
 	public synchronized static ScriptManager getInstance() {
@@ -24,9 +22,11 @@ public class ScriptManager {
 		return instance;
 	}
 	
-	public static ScriptManager createDebuggable(String debugFile) {
+	public static ScriptManager createDebuggable(String debugFile, String logFile) {
 		ScriptManager r = new ScriptManager();
 		r.debugFile = debugFile;
+		r.logFile = logFile;
+		//Not supported
 		return r;
 	}
 
@@ -59,11 +59,10 @@ public class ScriptManager {
 		}
 	}
 	
-	public synchronized static Context initContext() {
+	public synchronized Context initContext() {
 		//Context context = Context.enter();
 		Context context = new com.faendir.rhino_android.RhinoAndroidHelper().enterContext();
 		context.setOptimizationLevel(-1);
-		//context.seal(sealKey);
 		return context;
 	}
 	
@@ -73,18 +72,9 @@ public class ScriptManager {
 		return s;
 	}
 	
-	public void setDebugFile(String path) {
-		debugFile = path;
-	}
-	
 	public Reader getScriptReader() throws IOException {
 		if (debugFile != null) return new FileReader(debugFile);
 		return new InputStreamReader(new ScriptFileStream(bindActivity, "script.js"));
-	}
-	
-	public void startDebug(File outputFile) throws FileNotFoundException {
-		Context x = Context.getCurrentContext();
-		cx.setDebugger(new ScriptDebugger(outputFile), null);
 	}
 	
 	class StartCommand implements Runnable {

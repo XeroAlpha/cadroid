@@ -87,7 +87,7 @@ public class MainActivity extends Activity {
 		super.onCreate(bundle);
 		Intent i = getIntent();
 		if (i.getAction() == ACTION_DEBUG_EXEC && BuildConfig.DEBUG) {
-			mManager = ScriptManager.createDebuggable(i.getData().getPath());
+			mManager = ScriptManager.createDebuggable(i.getData().getPath(), i.getStringExtra("log"));
 		} else {
 			mManager = ScriptManager.getInstance();
 		}
