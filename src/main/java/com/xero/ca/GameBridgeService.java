@@ -25,7 +25,7 @@ public class GameBridgeService extends Service implements Handler.Callback {
 	public IBinder onBind(Intent intent) {
 		if (instance.get() != null) return null;
 		instance = new WeakReference<GameBridgeService>(this);
-		if (MainActivity.instance == null) {
+		if (MainActivity.instance.get() == null) {
 			runMain();
 		}
 		if (mCallback != null) mCallback.onRemoteEnabled();

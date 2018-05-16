@@ -21,8 +21,8 @@ public class AccessibilitySvc extends AccessibilityService {
 	}
 	
 	public static void notifyKeyEvent(final KeyEvent e) {
-		if (MainActivity.instance.get() != null) return;
 		final MainActivity ins = MainActivity.instance.get();
+		if (ins == null) return;
 		ins.runOnUiThread(new Runnable() {
 				@Override
 				public void run() {
