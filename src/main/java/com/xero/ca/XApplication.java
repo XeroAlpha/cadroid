@@ -6,12 +6,14 @@ import android.os.*;
 import android.util.*;
 import java.io.*;
 import java.util.*;
+import com.tendcloud.tenddata.*;
 
 public class XApplication extends Application {
 	public static final String TAG = "CA";
 	@Override
 	public void onCreate() {
 		super.onCreate();
+		TCAgent.init(this.getApplicationContext(), "70066D88E1654D9F988993CFF0A2A216", "default");
 		Thread.setDefaultUncaughtExceptionHandler(new ErrorCaughter());
 	}
 	
@@ -23,6 +25,7 @@ public class XApplication extends Application {
 	}
 	
 	public static void reportError(Context ctx, Thread t, Throwable e) {
+		TCAgent.onError(ctx, e);
 		Log.e(TAG, t.toString(), e);
 		Intent i = new Intent(ctx, BugReportActivity.class);
 		i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
