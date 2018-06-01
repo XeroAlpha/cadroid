@@ -6,6 +6,7 @@ import android.os.*;
 import android.view.*;
 import android.widget.*;
 import java.lang.ref.*;
+import java.util.*;
 
 public class MainActivity extends Activity {
 	public static final String ACTION_ADD_LIBRARY = "com.xero.ca.ADD_LIBRARY";
@@ -33,6 +34,7 @@ public class MainActivity extends Activity {
 	private SharedPreferences mPreferences;
 	private boolean mShowNotification;
 	private Intent mKeeperIntent;
+	private boolean mIsForeground;
 
 	private GameBridgeService.Callback gbsCallback = new GameBridgeService.Callback() {
 		@Override
@@ -102,6 +104,18 @@ public class MainActivity extends Activity {
 			clearBridgeListener();
 			mManager.startScript(this);
 		}
+	}
+
+	@Override
+	protected void onResume() {
+		mIsForeground = true;
+		super.onResume();
+	}
+
+	@Override
+	protected void onPause() {
+		mIsForeground = false;
+		super.onPause();
 	}
 	
 	public static void callIntent(Context ctx, Intent intent) {
@@ -240,5 +254,20 @@ public class MainActivity extends Activity {
 	
 	public ScriptManager getScriptManager() {
 		return mManager;
+	}
+	
+	public void bringToFront() {
+		if (mIsForeground) return;
+		ActivityManager am = (ActivityManager) getSystemService(ACTIVITY_SERVICE);
+		List<ActivityManager.RunningTaskInfo> tl = am.getRunningTasks(100);
+		for (ActivityManager.RunningTaskInfo e : tl) {
+			if (e.topActivity.getPackageName().equals(getPackageName())) {
+				am.moveTaskToFront(e.id, 0);
+				return;
+			}
+		}
+		Intent intent = new Intent(this, MainActivity.class);
+		intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+		startActivity(intent);
 	}
 }

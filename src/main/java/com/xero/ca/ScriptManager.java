@@ -3,6 +3,7 @@ import android.app.*;
 import android.os.*;
 import java.io.*;
 import org.mozilla.javascript.*;
+import com.tendcloud.tenddata.*;
 
 public class ScriptManager {
 	private static ScriptManager instance;
@@ -14,6 +15,10 @@ public class ScriptManager {
 	private String debugFile = null;
 	private String logFile = null;
 	private boolean running = false;
+	
+	static {
+		RhinoException.setStackStyle(StackStyle.V8);
+	}
 	
 	public synchronized static ScriptManager getInstance() {
 		if (instance == null) {
@@ -69,6 +74,7 @@ public class ScriptManager {
 	public Scriptable initScope(Context cx) {
 		Scriptable s = cx.initStandardObjects();
 		s.put("ScriptActivity", s, bindActivity);
+		s.put("TCAgent", s, new NativeJavaClass(s, TCAgent.class));
 		return s;
 	}
 	
