@@ -8,12 +8,12 @@ android {
         applicationId "com.xero.ca"
         minSdkVersion 14
         targetSdkVersion 21
-        versionCode 17681
-        versionName "2018-05-31"
+        versionCode 17692
+        versionName "2018-06-10"
     }
     buildTypes {
         release {
-            minifyEnabled true
+            minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
     }

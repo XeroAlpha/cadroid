@@ -62,16 +62,16 @@ public class MainActivity extends Activity {
 		}
 	};
 
-	public interface BridgeListener {
-		public boolean applyIntent(Intent intent);
-		public void onAccessibilitySvcCreate()
-		public void onAccessibilitySvcDestroy()
-		public void onActivityResult(int requestCode, int resultCode, Intent data);
-		public void onNewIntent(Intent intent);
-		public void onKeyEvent(KeyEvent event);
-		public void onRemoteEnabled();
-		public void onRemoteMessage(Message msg);
-		public void onRemoteDisabled();
+	public static interface BridgeListener {
+		public abstract boolean applyIntent(Intent intent);
+		public abstract void onAccessibilitySvcCreate()
+		public abstract void onAccessibilitySvcDestroy()
+		public abstract void onActivityResult(int requestCode, int resultCode, Intent data);
+		public abstract void onNewIntent(Intent intent);
+		public abstract void onKeyEvent(KeyEvent event);
+		public abstract void onRemoteEnabled();
+		public abstract void onRemoteMessage(Message msg);
+		public abstract void onRemoteDisabled();
 	}
 
 	@Override
