@@ -43,8 +43,9 @@ public class ScriptManager {
 		th.start();
 	}
 
-	public void endScript(boolean callUnload) {
-		if (!running) return;
+	public synchronized void endScript(boolean callUnload) {
+		if (!running || handler == null) return;
+		running = false;
 		handler.post(new ExitCommand(callUnload));
 	}
 	
@@ -101,7 +102,6 @@ public class ScriptManager {
 			cx = null;
 			scope = null;
 			handler = null;
-			running = false;
 		}
 	}
 	
