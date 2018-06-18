@@ -64,8 +64,8 @@ public class MainActivity extends Activity {
 
 	public static interface BridgeListener {
 		public abstract boolean applyIntent(Intent intent);
-		public abstract void onAccessibilitySvcCreate()
-		public abstract void onAccessibilitySvcDestroy()
+		public abstract void onAccessibilitySvcCreate();
+		public abstract void onAccessibilitySvcDestroy();
 		public abstract void onActivityResult(int requestCode, int resultCode, Intent data);
 		public abstract void onNewIntent(Intent intent);
 		public abstract void onKeyEvent(KeyEvent event);

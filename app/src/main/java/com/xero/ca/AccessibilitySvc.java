@@ -84,7 +84,7 @@ public class AccessibilitySvc extends AccessibilityService {
 	}
 	
 	public interface ServiceLifeCycleListener {
-		public void onCreate()
-		public void onDestroy()
+		public void onCreate();
+		public void onDestroy();
 	}
 }
