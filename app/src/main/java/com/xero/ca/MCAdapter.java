@@ -1,135 +1,146 @@
 package com.xero.ca;
 
-import android.content.*;
-import android.os.*;
-import android.widget.*;
-import java.io.*;
+import android.content.ComponentName;
+import android.content.Context;
+import android.content.Intent;
+import android.content.ServiceConnection;
+import android.os.Bundle;
+import android.os.Handler;
+import android.os.IBinder;
+import android.os.Message;
+import android.os.Messenger;
+import android.os.RemoteException;
+import android.widget.Toast;
 
 public class MCAdapter implements ServiceConnection, Handler.Callback {
-	private Context mContext;
-	private Handler mHandler;
-	private String clientName;
-	private int version;
-	private boolean mConnected = false;
-	private Messenger mRemote = null;
-	private Messenger mClient;
-	private Bundle mInfo;
-	private String newVer = null;
-	private int mPID;
+    private Context mContext;
+    private Handler mHandler;
+    private String clientName;
+    private int version;
+    private boolean mConnected = false;
+    private Messenger mRemote = null;
+    private Messenger mClient;
+    private Bundle mInfo;
+    private String newVer = null;
+    private int mPID;
 
-	public MCAdapter(Context context, String clientName, int version) {
-		mContext = context;
-		this.clientName = clientName;
-		this.version = version;
-		mHandler = new Handler(context.getMainLooper());
-		mHandler.post(new ConnectCommand());
-		mInfo = new Bundle();
-	}
-	
-	public void setNewVersion(String newVersion) {
-		newVer = newVersion;
-	}
+    public MCAdapter(Context context, String clientName, int version) {
+        mContext = context;
+        this.clientName = clientName;
+        this.version = version;
+        mHandler = new Handler(context.getMainLooper());
+        mHandler.post(new ConnectCommand());
+        mInfo = new Bundle();
+    }
 
-	public void toast(final String str) {
-		mHandler.post(new Runnable() {
-				@Override
-				public void run() {
-					Toast.makeText(mContext, str, Toast.LENGTH_SHORT).show();
-				}
-			});
-	}
+    public void setNewVersion(String newVersion) {
+        newVer = newVersion;
+    }
 
-	public void connect() {
-		if (mConnected) return;
-		try {
-			Intent intent = new Intent("com.xero.ca.GameBridge");
-			intent.setComponent(new ComponentName("com.xero.ca", "com.xero.ca.GameBridgeService"));
-			mContext.bindService(intent, this, Context.BIND_AUTO_CREATE);
-		} catch (Exception e) {
-			toast("无法连接至命令助手安卓版\n" + e.toString());
-		}
-	}
+    public void toast(final String str) {
+        mHandler.post(new Runnable() {
+            @Override
+            public void run() {
+                Toast.makeText(mContext, str, Toast.LENGTH_SHORT).show();
+            }
+        });
+    }
 
-	public void disconnect() {
-		if (!mConnected) return;
-		mContext.unbindService(this);
-	}
+    public void connect() {
+        if (mConnected) return;
+        try {
+            Intent intent = new Intent("com.xero.ca.GameBridge");
+            intent.setComponent(new ComponentName("com.xero.ca", "com.xero.ca.GameBridgeService"));
+            mContext.bindService(intent, this, Context.BIND_AUTO_CREATE);
+        } catch (Exception e) {
+            toast("无法连接至命令助手安卓版\n" + e.toString());
+        }
+    }
 
-	public void send(Bundle bundle) throws RemoteException {
-		if (mRemote == null) return;
-		Message msg = Message.obtain();
-		msg.what = 1;
-		msg.replyTo = mClient;
-		bundle.putInt("pid", mPID);
-		msg.setData(bundle);
-		mRemote.send(msg);
-	}
+    public void disconnect() {
+        if (!mConnected) return;
+        mContext.unbindService(this);
+    }
 
-	public void sendInit() {
-		Bundle bundle = new Bundle();
-		bundle.putString("action", "init");
-		bundle.putString("platform", clientName);
-		bundle.putInt("version", version);
-		try {
-			send(bundle);
-		} catch (RemoteException e) {}
-	}
+    public void send(Bundle bundle) throws RemoteException {
+        if (mRemote == null) return;
+        Message msg = Message.obtain();
+        msg.what = 1;
+        msg.replyTo = mClient;
+        bundle.putInt("pid", mPID);
+        msg.setData(bundle);
+        mRemote.send(msg);
+    }
 
-	public Bundle getBundle() {
-		return mInfo;
-	}
+    public void sendInit() {
+        Bundle bundle = new Bundle();
+        bundle.putString("action", "init");
+        bundle.putString("platform", clientName);
+        bundle.putInt("version", version);
+        try {
+            send(bundle);
+        } catch (RemoteException e) {
+            //do nothing
+        }
+    }
 
-	public void update() throws RemoteException {
-		Bundle bundle = new Bundle();
-		bundle.putString("action", "info");
-		bundle.putBundle("info", getBundle());
-		send(bundle);
-	}
-	
-	public void resetMCV(String newVersion) {
-		Bundle bundle = new Bundle();
-		bundle.putString("action", "resetMCV");
-		bundle.putString("version", newVersion);
-		try {
-			send(bundle);
-		} catch (RemoteException e) {}
-	}
+    public Bundle getBundle() {
+        return mInfo;
+    }
 
-	@Override
-	public void onServiceConnected(ComponentName cn, IBinder binder) {
-		if (binder == null) {
-			toast("命令助手安卓版已经与一个适配器连接。");
-			return;
-		}
-		mConnected = true;
-		mRemote = new Messenger(binder);
-		mClient = new Messenger(new android.os.Handler(this));
-		mPID = android.os.Process.myPid();
-		sendInit();
-		if (newVer != null) {
-			resetMCV(newVer);
-		}
-	}
+    public void update() throws RemoteException {
+        Bundle bundle = new Bundle();
+        bundle.putString("action", "info");
+        bundle.putBundle("info", getBundle());
+        send(bundle);
+    }
 
-	@Override
-	public void onServiceDisconnected(ComponentName cn) {
-		mConnected = false;
-		mRemote = null;
-		toast("命令助手已断开与适配器的连接");
-	}
+    public void resetMCV(String newVersion) {
+        Bundle bundle = new Bundle();
+        bundle.putString("action", "resetMCV");
+        bundle.putString("version", newVersion);
+        try {
+            send(bundle);
+        } catch (RemoteException e) {
+            //do nothing
+        }
+    }
 
-	@Override
-	public boolean handleMessage(Message msg) {
-		if (msg.what == 2) sendInit();
-		return false;
-	}
+    @Override
+    public void onServiceConnected(ComponentName cn, IBinder binder) {
+        if (binder == null) {
+            toast("命令助手安卓版已经与一个适配器连接。");
+            return;
+        }
+        mConnected = true;
+        mRemote = new Messenger(binder);
+        mClient = new Messenger(new android.os.Handler(this));
+        mPID = android.os.Process.myPid();
+        sendInit();
+        if (newVer != null) {
+            resetMCV(newVer);
+        }
+    }
 
-	public class ConnectCommand implements Runnable {
-		@Override
-		public void run() {
-			if (mConnected) return;
-			connect();
-			mHandler.postDelayed(this, 10000);
-		}
-	}
+    @Override
+    public void onServiceDisconnected(ComponentName cn) {
+        mConnected = false;
+        mRemote = null;
+        toast("命令助手已断开与适配器的连接");
+    }
+
+    @Override
+    public boolean handleMessage(Message msg) {
+        if (msg.what == 2) sendInit();
+        return false;
+    }
+
+    public class ConnectCommand implements Runnable {
+        @Override
+        public void run() {
+            if (mConnected) return;
+            connect();
+            mHandler.postDelayed(this, 10000);
+        }
+    }
 }

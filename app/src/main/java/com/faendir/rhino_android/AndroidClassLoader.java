@@ -44,10 +44,10 @@ public class AndroidClassLoader extends ClassLoader implements GeneratedClassLoa
     private static int instanceCounter = 0;
 
     private final ClassLoader parent;
-    private List<DexFile> dx;
     private final File dexFile;
     private final File odexOatFile;
     private final File classFile;
+    private List<DexFile> dx;
 
     /**
      * Create a new instance with the given parent classloader and cache dierctory
@@ -108,7 +108,7 @@ public class AndroidClassLoader extends ClassLoader implements GeneratedClassLoa
         }
     }
 
-    void reset(){
+    void reset() {
         dexFile.delete();
         odexOatFile.delete();
         classFile.delete();

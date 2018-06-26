@@ -3,7 +3,6 @@
     android:accessibilityEventTypes=""
     android:accessibilityFeedbackType="feedbackGeneric"
     android:accessibilityFlags="flagRequestFilterKeyEvents"
-    android:canRetrieveWindowContent="true"
     android:canRequestFilterKeyEvents="true"
-    android:description="@string/as_description">
-</accessibility-service>
+    android:canRetrieveWindowContent="true"
+    android:description="@string/as_description"></accessibility-service>

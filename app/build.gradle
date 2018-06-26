@@ -20,5 +20,6 @@ android {
 }
 
 dependencies {
-    implementation fileTree(dir: 'libs', include: ['*.jar'])
+    implementation fileTree(include: ['*.jar'], dir: 'libs')
+    implementation files('libs/SaaS_AppAnalytics_Android_SDK_V4.0.19.jar')
 }
