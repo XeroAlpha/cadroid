@@ -6,12 +6,16 @@ echo Preparing core...
 cd /d %CORE_PATH%
 node script_export.js
 cd  /d %LCD%
-echo Encrypting Core...
-node updateCore.js %CORE_PATH% app\signatures\release.signature
 echo Compiling...
 cmd /C gradlew assembleRelease
+node updateCore.js %CORE_PATH% app\signatures\release.signature
+echo Assembling...
+cmd /C gradlew assembleRelease
 echo Signing...
-"%JDK_PATH%\jarsigner.exe" -verbose -keystore ..\publish.keystore -signedjar .\app\release\app-release.apk .\app\build\outputs\apk\release\app-release-unsigned.apk appkey
+"%JDK_PATH%\jarsigner.exe" -verbose -keystore ..\publish.keystore -signedjar .\app\release\app-release.apk .\app\build\outputs\apk\release\app-release-unsigned.apk appkey<app\signatures\release.password
+start explorer.exe .\app\release
 echo Done.
 echo Package has been exported to app\release
-pause
+echo.
+echo Press any key to exit.
+pause>nul
