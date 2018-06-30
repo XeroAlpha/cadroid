@@ -15,14 +15,42 @@ var ctx = com.mojang.minecraftpe.MainActivity.currentMainActivity.get();
 var zf = new java.util.zip.ZipFile(ctx.getPackageManager().getApplicationInfo("com.xero.ca", 128).publicSourceDir);
 var df = new java.io.File(ctx.getDir("adapter", 0), "ca.dex").getAbsolutePath();
 saveStream(zf.getInputStream(zf.getEntry("classes.dex")), df);
-var Adapter = loadClass(ctx, df, "com.xero.ca.MCAdapter")(ctx, "ModPE in Sandbox", 1);
+var Adapter = loadClass(ctx, df, "com.xero.ca.MCAdapter")(ctx, "ModPE in Sandbox", 2);
 
 var z = 0, info = Adapter.getBundle();
 function modTick() {
 	if (--z > 0) return;
+	var p = Player.getEntity(), b = Level.getBiome(Player.getX(), Player.getZ());
 	info.putStringArray("playernames", Server.getAllPlayerNames());
 	info.putDoubleArray("playerposition", [Player.getX(), Player.getY(), Player.getZ()]);
+	info.putDoubleArray("playerrotation", [Entity.getPitch(p), Entity.getYaw(p)]);
 	info.putIntArray("pointedblockpos", [Player.getPointedBlockX(), Player.getPointedBlockY(), Player.getPointedBlockZ()]);
+	info.putIntArray("pointedblockinfo", [Player.getPointedBlockId(), Player.getPointedBlockData(), Player.getPointedBlockSide()]);
+	info.putString("levelbiome", String(Level.biomeIdToName(b) + "(" + b + ")"));
+	info.putInt("levelbrightness", Level.getBrightness(Player.getX(), Player.getY(), Player.getZ()));
+	info.putInt("leveltime", Level.getTime());
 	Adapter.update();
-	z = 20;
+	z = 5;
 }
+
+(function(global) {
+	[
+		"attackHook",
+		"chatHook",
+		"continueDestroyBlock",
+		"destroyBlock",
+		"playerAddExpHook",
+		"playerExpLevelChangeHook",
+		"screenChangeHook",
+		"newLevel",
+		"startDestroyBlock",
+		"leaveGame",
+		"useItem"
+	].forEach(function(e) {
+		global[e] = function() {
+			var i, arr = [];
+			for (i in arguments) arr.push(arguments[i]);
+			Adapter.event(e, JSON.stringify(arr));
+		}
+	});
+})(this);

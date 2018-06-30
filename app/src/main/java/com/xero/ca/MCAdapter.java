@@ -95,6 +95,14 @@ public class MCAdapter implements ServiceConnection, Handler.Callback {
         send(bundle);
     }
 
+    public void event(String name, String param) throws RemoteException {
+        Bundle bundle = new Bundle();
+        bundle.putString("action", "event");
+        bundle.putString("name", name);
+        bundle.putString("param", param);
+        send(bundle);
+    }
+
     public void resetMCV(String newVersion) {
         Bundle bundle = new Bundle();
         bundle.putString("action", "resetMCV");

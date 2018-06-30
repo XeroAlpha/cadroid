@@ -1,4 +1,4 @@
-const ctx = com.mojang.minecraftpe.MainActivity.currentMainActivity.get();
+var ctx = com.mojang.minecraftpe.MainActivity.currentMainActivity.get();
 
 var Adapter = {
 	contextHandler : new android.os.Handler(ctx.getMainLooper()),
@@ -57,6 +57,7 @@ var Adapter = {
 	},
 	onReceive : function(msg) {
 		if (msg.what == 2) return this.sendInit();
+		
 	},
 	toast : function(s) {
 		ctx.runOnUiThread(function() {
@@ -68,7 +69,7 @@ var Adapter = {
 		this.send(function(bundle) {
 			bundle.putString("action", "init");
 			bundle.putString("platform", self.clientName);
-			bundle.putInt("version", 1);
+			bundle.putInt("version", 2);
 		});
 	},
 	send : function(f) {
@@ -91,14 +92,47 @@ var z = 0;
 function modTick() {
 	if (--z > 0) return;
 	Adapter.send(data);
-	z = 20;
+	z = 5;
 }
+
+(function(global) {
+	[
+		"attackHook",
+		"chatHook",
+		"continueDestroyBlock",
+		"destroyBlock",
+		"playerAddExpHook",
+		"playerExpLevelChangeHook",
+		"screenChangeHook",
+		"newLevel",
+		"startDestroyBlock",
+		"leaveGame",
+		"useItem"
+	].forEach(function(e) {
+		global[e] = function() {
+			Adapter.send(event.bind(null, e, arguments));
+		}
+	});
+})(this);
 
 var info = new android.os.Bundle();
 function data(bundle) {
+	var p = Player.getEntity(), b = Level.getBiome(Player.getX(), Player.getZ());
 	info.putStringArray("playernames", Server.getAllPlayerNames());
 	info.putDoubleArray("playerposition", [Player.getX(), Player.getY(), Player.getZ()]);
+	info.putDoubleArray("playerrotation", [Entity.getPitch(p), Entity.getYaw(p)]);
 	info.putIntArray("pointedblockpos", [Player.getPointedBlockX(), Player.getPointedBlockY(), Player.getPointedBlockZ()]);
+	info.putIntArray("pointedblockinfo", [Player.getPointedBlockId(), Player.getPointedBlockData(), Player.getPointedBlockSide()]);
+	info.putString("levelbiome", String(Level.biomeIdToName(b) + "(" + b + ")"));
+	info.putInt("levelbrightness", Level.getBrightness(Player.getX(), Player.getY(), Player.getZ()));
+	info.putInt("leveltime", Level.getTime());
 	bundle.putString("action", "info");
 	bundle.putBundle("info", info);
+}
+function event(name, args, bundle) {
+	var i, arr = [];
+	for (i in args) arr.push(args[i]);
+	bundle.putString("action", "event");
+	bundle.putString("name", name);
+	bundle.putString("param", JSON.stringify(arr));
 }
