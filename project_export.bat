@@ -1,5 +1,6 @@
 @echo off
 set JDK_PATH=C:\Program Files\Java\jdk1.8.0_171\bin
+set BUILD_TOOL_PATH=C:\Users\Administrator\AppData\Local\Android\Sdk\build-tools\28.0.0
 set CORE_PATH=..\ca
 set LCD=%CD%
 echo Preparing core...
@@ -12,9 +13,11 @@ node updateCore.js %CORE_PATH% app\signatures\release.signature
 echo Assembling...
 cmd /C gradlew assembleRelease
 echo Signing...
-"%JDK_PATH%\jarsigner.exe" -verbose -keystore ..\publish.keystore -signedjar .\app\release\app-release.apk .\app\build\outputs\apk\release\app-release-unsigned.apk appkey<app\signatures\release.password>nul
-start explorer.exe .\app\release
+"%JDK_PATH%\jarsigner.exe" -verbose -keystore ..\publish.keystore -signedjar .\app\build\outputs\apk\release\app-release-unaligned.apk .\app\build\outputs\apk\release\app-release-unsigned.apk appkey<app\signatures\release.password>nul
+echo Aligning...
+"%BUILD_TOOL_PATH%\zipalign.exe" -f 4 .\app\build\outputs\apk\release\app-release-unaligned.apk .\app\release\app-release.apk
 echo Done.
+start explorer.exe .\app\release
 echo Package has been exported to app\release
 echo.
 echo Press any key to exit.
