@@ -12,7 +12,7 @@ public class ScriptActionService extends Service {
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-        MainActivity.callIntent(this, new Intent(MainActivity.ACTION_SCRIPT_ACTION).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK));
+        MainActivity.callIntent(this, new Intent(MainActivity.ACTION_SCRIPT_ACTION).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK).setClass(this, MainActivity.class));
         stopSelf();
         return super.onStartCommand(intent, flags, startId);
     }
