@@ -273,6 +273,10 @@ public class MainActivity extends Activity {
         startActivity(intent);
     }
 
+    public RhinoWebSocketHelper createWebSocketHelper(int port, RhinoWebSocketHelper.DelegateInterface delegate) {
+        return new RhinoWebSocketHelper(port, delegate);
+    }
+
     public interface BridgeListener {
         boolean applyIntent(Intent intent);
 

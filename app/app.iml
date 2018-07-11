@@ -106,6 +106,7 @@
     <orderEntry type="jdk" jdkName="Android API 21 Platform" jdkType="Android SDK" />
     <orderEntry type="sourceFolder" forTests="false" />
     <orderEntry type="library" name="Gradle: __local_aars__:D.\Projects\cadroid\app\libs\rhino-1.7.9.jar:unspecified@jar" level="project" />
+    <orderEntry type="library" name="Gradle: __local_aars__:D.\Projects\cadroid\app\libs\Java-WebSocket-1.3.8.jar:unspecified@jar" level="project" />
     <orderEntry type="library" name="Gradle: __local_aars__:D.\Projects\cadroid\app\libs\SaaS_AppAnalytics_Android_SDK_V4.0.19.jar:unspecified@jar" level="project" />
     <orderEntry type="library" name="Gradle: __local_aars__:D.\Projects\cadroid\app\libs\dx.jar:unspecified@jar" level="project" />
     <orderEntry type="library" name="Gradle: __local_aars__:D.\Projects\cadroid\app\libs\zip4j_1.3.2.jar:unspecified@jar" level="project" />
