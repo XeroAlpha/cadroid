@@ -68,31 +68,6 @@ public class AccessibilitySvc extends AccessibilityService {
         super.onDestroy();
     }
 
-    public int paste() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2) {
-            AccessibilityNodeInfo node = getRootInActiveWindow();
-            if (node == null) return 2;
-            node = node.findFocus(AccessibilityNodeInfo.FOCUS_INPUT);
-            if (node == null) return 3;
-            if (!node.isEditable()) return 1;
-            if (!node.performAction(AccessibilityNodeInfo.ACTION_PASTE)) return 4;
-            return 0;
-        }
-        return -1;
-    }
-
-    public CharSequence getFocusEditableText() {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2) {
-            AccessibilityNodeInfo node = getRootInActiveWindow();
-            if (node == null) return null;
-            node = node.findFocus(AccessibilityNodeInfo.FOCUS_INPUT);
-            if (node == null) return null;
-            if (!node.isEditable()) return null;
-            return node.getText();
-        }
-        return null;
-    }
-
     public interface ServiceLifeCycleListener {
         void onCreate();
 
