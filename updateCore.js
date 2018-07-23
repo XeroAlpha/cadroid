@@ -25,8 +25,8 @@ function addDexVerification(content) {
 	return content.replace(/\$dexCrc\$/g, crc);
 }
 
-function sign(corePath, signPath) {
-	var srcbuf = zlib.gzipSync(Buffer.from(addDexVerification(fs.readFileSync(corePath + "/build/min.js", 'utf-8'))));
+function sign(srcPath, signPath) {
+	var srcbuf = zlib.gzipSync(Buffer.from(addDexVerification(fs.readFileSync(srcPath, 'utf-8'))));
 	var sgnbuf = fs.readFileSync(signPath);
 	var i, srcsize = srcbuf.length, sgnsize = sgnbuf.length;
 	for (i = 0; i < srcsize; i++) {
@@ -35,21 +35,33 @@ function sign(corePath, signPath) {
 	fs.writeFileSync(cwd + "/app/src/main/assets/script.js", srcbuf);
 }
 
-function main(corePath, signPath) {
+function debug(corePath, signPath) {
 	console.log("Updating build.gradle");
 	updateBuild(corePath);
 	console.log("Encrypting...");
-	sign(corePath, signPath);
+	sign(corePath + "/命令助手.js", signPath);
+}
+
+function release(corePath, signPath) {
+	console.log("Updating build.gradle");
+	updateBuild(corePath);
+	console.log("Encrypting...");
+	sign(corePath + "/build/min.js", signPath);
 }
 
 function help() {
-	console.log("node updateCore.js <corePath> <signPath>");
+	console.log("node updateCore.js <mode> <corePath> <signPath>");
+	console.log(" <mode> 'debug' or 'release'");
 	console.log(" <corePath> root path of project ca");
 	console.log(" <signPath> sign to be encrypted with");
 }
 
-if (process.argv.length != 4) {
+if (process.argv.length != 5) {
 	help();
 } else {
-	main(process.argv[2], process.argv[3]);
+	if (process.argv[2] == "debug") {
+		debug(process.argv[3], process.argv[4]);
+	} else {
+		release(process.argv[3], process.argv[4]);
+	}
 }
