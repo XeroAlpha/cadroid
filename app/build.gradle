@@ -1,15 +1,15 @@
 apply plugin: 'com.android.application'
 
 android {
-    compileSdkVersion 22
+    compileSdkVersion 28
     buildToolsVersion '27.0.3'
 
     defaultConfig {
         applicationId "com.xero.ca"
         minSdkVersion 14
-        targetSdkVersion 22
-        versionCode 17733
-        versionName "2018-07-21"
+        targetSdkVersion 28
+        versionCode 17739
+        versionName "2018-07-27"
     }
     buildTypes {
         release {
