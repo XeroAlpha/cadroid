@@ -104,6 +104,22 @@ public class ScriptManager {
         return new InputStreamReader(new ScriptFileStream(bindActivity, "script.js"));
     }
 
+    public Context getContext() {
+        return cx;
+    }
+
+    public Scriptable getScope() {
+        return scope;
+    }
+
+    public Activity getBindActivity() {
+        return bindActivity;
+    }
+
+    public Handler getHandler() {
+        return handler;
+    }
+
     class StartCommand implements Runnable {
         @Override
         public void run() {

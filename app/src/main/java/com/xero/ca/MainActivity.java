@@ -6,12 +6,14 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.res.Configuration;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.view.KeyEvent;
 import android.widget.TextView;
 
+import java.io.File;
 import java.lang.ref.WeakReference;
 import java.util.List;
 
@@ -281,6 +283,14 @@ public class MainActivity extends Activity {
 
     public RhinoWebSocketHelper createWebSocketHelper(int port, RhinoWebSocketHelper.DelegateInterface delegate) {
         return new RhinoWebSocketHelper(port, delegate);
+    }
+
+    public Uri fileToUri(File file) {
+        return UnsafeFileProvider.getUriForFile(file);
+    }
+
+    public RhinoFrameLayout createFrameLayout(RhinoFrameLayout.Callback callback) {
+        return new RhinoFrameLayout(this, callback);
     }
 
     public interface BridgeListener {

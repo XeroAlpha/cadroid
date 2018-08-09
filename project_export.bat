@@ -19,6 +19,3 @@ echo Aligning...
 echo Done.
 start explorer.exe .\app\release
 echo Package has been exported to app\release
-echo.
-echo Press any key to exit.
-pause>nul

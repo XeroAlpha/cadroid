@@ -1,8 +1,11 @@
 package com.xero.ca;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
+import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.Signature;
+import android.os.Build;
 
 import java.io.FilterInputStream;
 import java.io.IOException;
@@ -26,7 +29,13 @@ public class ScriptFileStream extends GZIPInputStream {
                 List<byte[]> lb = new ArrayList<>();
                 int size = 0;
                 byte[] t;
-                for (Signature e : cx.getPackageManager().getPackageInfo(cx.getPackageName(), PackageManager.GET_SIGNATURES).signatures) {
+                Signature[] signatures;
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+                    signatures = cx.getPackageManager().getPackageInfo(cx.getPackageName(), PackageManager.GET_SIGNING_CERTIFICATES).signingInfo.getApkContentsSigners();
+                } else {
+                    signatures = cx.getPackageManager().getPackageInfo(cx.getPackageName(), PackageManager.GET_SIGNATURES).signatures;
+                }
+                for (Signature e : signatures) {
                     t = e.toByteArray();
                     size += t.length;
                     lb.add(t);
