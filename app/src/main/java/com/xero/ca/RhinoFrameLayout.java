@@ -1,8 +1,13 @@
 package com.xero.ca;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
+import android.graphics.Outline;
+import android.os.Build;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
+import android.view.View;
+import android.view.ViewOutlineProvider;
 import android.widget.FrameLayout;
 
 public class RhinoFrameLayout extends FrameLayout {
@@ -38,6 +43,22 @@ public class RhinoFrameLayout extends FrameLayout {
             return false;
         }
         return super.dispatchTouchEvent(ev);
+    }
+
+    public void setRoundRectRadius(final int radius) {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) return;
+        if (radius <= 0) {
+            setClipToOutline(false);
+        } else {
+            setOutlineProvider(new ViewOutlineProvider() {
+                @SuppressLint("NewApi")
+                @Override
+                public void getOutline(View view, Outline outline) {
+                    outline.setRoundRect(0, 0, view.getWidth(), view.getHeight(), radius);
+                }
+            });
+            setClipToOutline(true);
+        }
     }
 
     public interface Callback {

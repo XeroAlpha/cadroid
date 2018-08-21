@@ -32,7 +32,6 @@ public class ScriptManager {
     private Handler handler = null;
     private Activity bindActivity = null;
     private String debugFile = null;
-    private String logFile = null;
     private boolean running = false;
 
     private ScriptManager() {
@@ -47,11 +46,9 @@ public class ScriptManager {
         return m;
     }
 
-    public static ScriptManager createDebuggable(String debugFile, String logFile) {
+    public static ScriptManager createDebuggable(String debugFile) {
         ScriptManager r = new ScriptManager();
         r.debugFile = debugFile;
-        r.logFile = logFile;
-        //Not supported
         return r;
     }
 
