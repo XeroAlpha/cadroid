@@ -4,6 +4,7 @@ import android.app.Activity;
 import android.os.Build;
 import android.os.Handler;
 import android.os.Looper;
+import android.util.Log;
 
 import com.tendcloud.tenddata.TCAgent;
 
@@ -16,6 +17,7 @@ import org.mozilla.javascript.StackStyle;
 
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.lang.ref.WeakReference;
@@ -32,10 +34,10 @@ public class ScriptManager {
     private Handler handler = null;
     private Activity bindActivity = null;
     private String debugFile = null;
+    private Hotfix hotfix = null;
     private boolean running = false;
 
-    private ScriptManager() {
-    }
+    private ScriptManager() {}
 
     public synchronized static ScriptManager getInstance() {
         ScriptManager m = instance.get();
@@ -82,6 +84,10 @@ public class ScriptManager {
         }
     }
 
+    public void setHotfix(String coreFile, String signFile, byte[] verify, int versionCode) {
+        hotfix = new Hotfix(coreFile, signFile, verify, versionCode);
+    }
+
     public synchronized Context initContext() {
         //Context context = Context.enter();
         Context context = new com.faendir.rhino_android.RhinoAndroidHelper().enterContext();
@@ -98,7 +104,14 @@ public class ScriptManager {
 
     public Reader getScriptReader() throws IOException {
         if (debugFile != null) return new FileReader(debugFile);
-        return new InputStreamReader(new ScriptFileStream(bindActivity, "script.js"));
+        if (hotfix != null) {
+            try {
+                return new InputStreamReader(hotfix.getInputStream());
+            } catch (IOException e) {
+                Log.e("CA", "Loading hotfix failed", e);
+            }
+        }
+        return new InputStreamReader(ScriptFileStream.fromAsset(bindActivity, "script.js"));
     }
 
     public Context getContext() {
@@ -153,6 +166,24 @@ public class ScriptManager {
             } else {
                 handler.getLooper().quit();
             }
+        }
+    }
+
+    class Hotfix {
+        public Hotfix(String coreFile, String signFile, byte[] verify, int versionCode) {
+            this.coreFile = coreFile;
+            this.signFile = signFile;
+            this.verify = verify;
+            this.versionCode = versionCode;
+        }
+
+        private String coreFile;
+        private String signFile;
+        private byte[] verify;
+        private int versionCode;
+
+        public InputStream getInputStream() throws IOException {
+            return ScriptFileStream.fromFile(bindActivity, coreFile, signFile, verify, versionCode);
         }
     }
 }

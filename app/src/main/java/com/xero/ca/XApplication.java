@@ -51,7 +51,7 @@ public class XApplication extends Application {
     @Override
     public void onCreate() {
         super.onCreate();
-        TCAgent.init(this.getApplicationContext(), "70066D88E1654D9F988993CFF0A2A216", "default");
+        TCAgent.init(this.getApplicationContext(), Secret.getTDToken(), "default");
         Thread.setDefaultUncaughtExceptionHandler(new ErrorCaughter());
     }
 
