@@ -4,6 +4,7 @@ import android.annotation.SuppressLint;
 import android.content.Context;
 import android.graphics.Outline;
 import android.os.Build;
+import android.util.AttributeSet;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
 import android.view.View;
@@ -23,7 +24,24 @@ public class RhinoFrameLayout extends FrameLayout {
         mCallback = callback;
     }
 
+
+    public RhinoFrameLayout(Context context) {
+        super(context);
+        mCallback = new DefaultCallback();
+    }
+
+    public RhinoFrameLayout(Context context, AttributeSet attrs) {
+        super(context, attrs);
+        mCallback = new DefaultCallback();
+    }
+
+    public RhinoFrameLayout(Context context, AttributeSet attrs, int defStyleAttr) {
+        super(context, attrs, defStyleAttr);
+        mCallback = new DefaultCallback();
+    }
+
     @Override
+
     public boolean dispatchKeyEvent(KeyEvent event) {
         int r = mCallback.dispatchKeyEvent(event);
         if (r == RETURN_TRUE) {
@@ -64,5 +82,17 @@ public class RhinoFrameLayout extends FrameLayout {
     public interface Callback {
         int dispatchKeyEvent(KeyEvent event);
         int dispatchTouchEvent(MotionEvent ev);
+    }
+
+    private class DefaultCallback implements Callback {
+        @Override
+        public int dispatchKeyEvent(KeyEvent event) {
+            return RETURN_DEFAULT;
+        }
+
+        @Override
+        public int dispatchTouchEvent(MotionEvent ev) {
+            return RETURN_DEFAULT;
+        }
     }
 }

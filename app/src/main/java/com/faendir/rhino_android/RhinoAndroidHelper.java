@@ -16,6 +16,8 @@
 
 package com.faendir.rhino_android;
 
+import android.support.annotation.VisibleForTesting;
+
 import org.mozilla.javascript.Context;
 import org.mozilla.javascript.ContextFactory;
 import org.mozilla.javascript.SecurityController;
@@ -60,15 +62,6 @@ public class RhinoAndroidHelper {
     }
 
     /**
-     * @return a context prepared for android
-     * @deprecated use {@link #enterContext()} instead
-     */
-    @Deprecated
-    public static Context prepareContext() {
-        return new RhinoAndroidHelper().enterContext();
-    }
-
-    /**
      * call this instead of {@link Context#enter()}
      *
      * @return a context prepared for android
@@ -82,6 +75,7 @@ public class RhinoAndroidHelper {
     /**
      * @return The Context factory which has to be used on android.
      */
+    @VisibleForTesting
     public AndroidContextFactory getContextFactory() {
         AndroidContextFactory factory;
         if (!ContextFactory.hasExplicitGlobal()) {
@@ -96,12 +90,11 @@ public class RhinoAndroidHelper {
     }
 
     /**
-     * Compiles all classes in a jar file. They will be available in Rhino.
-     *
-     * @param jar the jar to load
-     * @throws IOException if the jar cannot be read or is invalid or there is a problem with the cache
+     * @return a context prepared for android
+     * @deprecated use {@link #enterContext()} instead
      */
-    public void loadClassJar(File jar) throws IOException {
-        ((AndroidClassLoader) getContextFactory().getApplicationClassLoader()).loadJar(jar);
+    @Deprecated
+    public static Context prepareContext() {
+        return new RhinoAndroidHelper().enterContext();
     }
 }

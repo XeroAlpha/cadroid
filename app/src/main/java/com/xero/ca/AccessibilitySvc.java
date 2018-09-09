@@ -3,11 +3,9 @@ package com.xero.ca;
 import android.accessibilityservice.AccessibilityService;
 import android.content.Context;
 import android.content.Intent;
-import android.os.Build;
 import android.provider.Settings;
 import android.view.KeyEvent;
 import android.view.accessibility.AccessibilityEvent;
-import android.view.accessibility.AccessibilityNodeInfo;
 
 import java.lang.ref.WeakReference;
 

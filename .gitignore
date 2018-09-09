@@ -1,0 +1,9 @@
+/app/build
+/app/src/main/assets/script.js
+/app/release
+/app/signatures
+/app/src/test
+/.gradle
+/export.bat
+/app/src/main/java/com/xero/ca/Secret.java
+/build/

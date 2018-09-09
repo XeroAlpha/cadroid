@@ -1,7 +1,6 @@
 package com.xero.ca;
 
 import android.app.Activity;
-import android.app.ActivityManager;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -18,8 +17,6 @@ import android.widget.TextView;
 
 import java.io.File;
 import java.lang.ref.WeakReference;
-import java.util.Arrays;
-import java.util.List;
 
 public class MainActivity extends Activity {
     public static final String ACTION_ADD_LIBRARY = "com.xero.ca.ADD_LIBRARY";
@@ -316,23 +313,6 @@ public class MainActivity extends Activity {
 
     public ScriptManager getScriptManager() {
         return mManager;
-    }
-
-    @Deprecated
-    public void bringToFront() {
-        if (mIsForeground) return;
-        ActivityManager am = (ActivityManager) getSystemService(ACTIVITY_SERVICE);
-        if (am == null) return;
-        List<ActivityManager.RunningTaskInfo> tl = am.getRunningTasks(100);
-        for (ActivityManager.RunningTaskInfo e : tl) {
-            if (e.topActivity.getPackageName().equals(getPackageName())) {
-                am.moveTaskToFront(e.id, 0);
-                return;
-            }
-        }
-        Intent intent = new Intent(this, MainActivity.class);
-        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-        startActivity(intent);
     }
 
     public RhinoWebSocketHelper createWebSocketHelper(int port, RhinoWebSocketHelper.DelegateInterface delegate) {
