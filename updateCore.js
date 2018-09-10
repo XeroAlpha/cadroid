@@ -15,7 +15,7 @@ function updateBuild(corePath) {
 	var lv = versions[versions.length - 1];
 	var s = fs.readFileSync(gradle, 'utf-8');
 	s = s.replace(/versionCode \d+/, "versionCode " + Math.floor(lv.time / 86400000));
-	s = s.replace(/versionName ".*"/, "versionName \"" + lv.version + "\"");
+	s = s.replace(/versionName ".*"/, "versionName \"" + lv.version + " (" + lv.belongs + ")" + "\"");
 	fs.writeFileSync(gradle, s);
 }
 
