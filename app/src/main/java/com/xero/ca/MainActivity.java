@@ -339,6 +339,14 @@ public class MainActivity extends Activity {
         return BuildConfig.VERSION_NAME;
     }
 
+    public byte[] getVerifyKey() {
+        return Secret.getVerifyKey();
+    }
+
+    public String getGiteeFeedbackToken() {
+        return Secret.getGiteeFeedbackToken();
+    }
+
     public interface BridgeListener {
         boolean applyIntent(Intent intent);
 
