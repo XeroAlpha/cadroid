@@ -58,6 +58,47 @@ function makeUpdate(corePath, signPath) {
 	fs.writeFileSync(corePath + "/pages/hotfix.json", JSON.stringify(data));
 }
 
+function buildBeta(corePath) {
+	var hotfix = JSON.parse(fs.readFileSync(corePath + "/pages/hotfix.json"));
+	var ver = hotfix.belongs.split(".").map((e) => parseInt(e));
+	fs.writeFileSync(corePath + "/export/命令助手(" + hotfix.version + ").lib", asLibrary([
+		'Plugins.inject(function(o){',
+			'const pub=' + JSON.stringify(hotfix.version) + ',ver=' + JSON.stringify(ver) + ',shell=' + JSON.stringify(hotfix.hotfix.shell) + ',ds=' + JSON.stringify(hotfix.info) + ';',
+			'function u(p,b){',
+				'var o=new java.io.FileOutputStream(p);',
+				'o.write(android.util.Base64.decode(b,2));',
+				'o.close();',
+			'}',
+			'o.name="命令助手尝鲜包 - "+pub;',
+			'o.description="命令助手Beta版安装器\\n";',
+			'o.uuid="64ac6220-cf64-465a-8af8-1c9dd2835cd0";',
+			'o.author="命令助手制作组";',
+			'o.version=ver;',
+			'if (Date.parse(CA.publishDate)>=Date.parse(pub)){',
+				'CA.Library.removeLibrary(path);',
+				'return void(o.description+="您正在使用本尝鲜版或更高版本\\n\\n"+ds);',
+			'}',
+			'if(MapScript.host!="Android")return void(o.description+="本安装器仅在App版上可用");',
+			'if(shell!=ScriptActivity.getShellVersion())return void(o.description+="本安装器不适用于您的版本");',
+			'u(MapScript.baseDir+"core.js",' + JSON.stringify(fs.readFileSync(corePath + "/pages/hotfix.js").toString("base64")) + ');',
+			'u(MapScript.baseDir+"core.sign",' + JSON.stringify(fs.readFileSync(corePath + "/pages/hotfix.sign").toString("base64")) + ');',
+			'Common.showTextDialog(o.description+="重新启动命令助手后即可使用");',
+		'})'
+	].join("")));
+}
+function asLibrary(s) {
+	var o;
+	var dh = Buffer.alloc(15), date = Date.now();
+	dh.write("LIBRARY");
+	dh.writeInt32BE(Math.floor(date / 0xffffffff), 7);
+	dh.writeInt32BE(date & 0xffffffff, 11);
+	s = zlib.gzipSync(s);
+	o = Buffer.alloc(dh.length + s.length);
+	dh.copy(o, 0);
+	s.copy(o, dh.length);
+	return o;
+}
+
 function getShellVersion(s) {
 	var r = s.match(/buildConfigField "int", "SHELL_VERSION", "(\d+)"/);
 	if (r) return parseInt(r[1]);
@@ -87,11 +128,18 @@ function release(corePath, signPath) {
 	console.log("Encrypting...");
 	sign(fs.readFileSync(corePath + "/build/min.js", 'utf-8'), signPath, scriptPath, true);
 	makeUpdate(corePath, signPath);
+	buildBeta(corePath);
+}
+
+function hotfix(corePath, signPath) {
+	updateBuild(corePath);
+	makeUpdate(corePath, signPath);
+	buildBeta(corePath);
 }
 
 function help() {
 	console.log("node updateCore.js <mode> <corePath> <signPath>");
-	console.log(" <mode> 'debug' or 'release'");
+	console.log(" <mode> 'debug', 'hotfix' or 'release'");
 	console.log(" <corePath> root path of project ca");
 	console.log(" <signPath> sign to be encrypted with");
 }
@@ -101,6 +149,8 @@ if (process.argv.length != 5) {
 } else {
 	if (process.argv[2] == "debug") {
 		debug(process.argv[3], process.argv[4]);
+	} else if (process.argv[2] == "hotfix") {
+		hotfix(process.argv[3], process.argv[4]);
 	} else {
 		release(process.argv[3], process.argv[4]);
 	}
