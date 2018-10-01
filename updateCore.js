@@ -137,9 +137,14 @@ function hotfix(corePath, signPath) {
 	buildBeta(corePath);
 }
 
+function exportApk(corePath) {
+	var update = JSON.parse(fs.readFileSync(corePath + "/update.json"));
+	fs.copyFileSync(cwd + "/app/release/app-release.apk", corePath + "/export/命令助手(" + update.version + ").apk");
+}
+
 function help() {
 	console.log("node updateCore.js <mode> <corePath> <signPath>");
-	console.log(" <mode> 'debug', 'hotfix' or 'release'");
+	console.log(" <mode> 'debug', 'hotfix', 'export' or 'release'");
 	console.log(" <corePath> root path of project ca");
 	console.log(" <signPath> sign to be encrypted with");
 }
@@ -151,6 +156,8 @@ if (process.argv.length != 5) {
 		debug(process.argv[3], process.argv[4]);
 	} else if (process.argv[2] == "hotfix") {
 		hotfix(process.argv[3], process.argv[4]);
+	} else if (process.argv[2] == "export") {
+		exportApk(process.argv[3]);
 	} else {
 		release(process.argv[3], process.argv[4]);
 	}
