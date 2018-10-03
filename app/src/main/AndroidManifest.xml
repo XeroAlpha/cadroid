@@ -54,7 +54,6 @@
                 <data android:mimeType="*/*" />
                 <data android:host="*" />
                 <data android:pathPattern=".*\.lib" />
-                <data android:pathPattern=".*\.json" />
             </intent-filter>
         </activity>
         <activity

@@ -347,6 +347,10 @@ public class MainActivity extends Activity {
         return Secret.getGiteeFeedbackToken();
     }
 
+    public RhinoWebView createWebView(RhinoWebView.Delegee delegee) {
+        return new RhinoWebView(this).setDelegee(delegee);
+    }
+
     public interface BridgeListener {
         boolean applyIntent(Intent intent);
 
