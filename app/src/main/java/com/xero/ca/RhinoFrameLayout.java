@@ -1,6 +1,6 @@
 package com.xero.ca;
 
-import android.annotation.SuppressLint;
+import android.annotation.TargetApi;
 import android.content.Context;
 import android.graphics.Outline;
 import android.os.Build;
@@ -15,6 +15,12 @@ public class RhinoFrameLayout extends FrameLayout {
     public static final int RETURN_TRUE = 1;
     public static final int RETURN_FALSE = -1;
     public static final int RETURN_DEFAULT = 0;
+
+    public static final int DIRECTION_ALL = 0;
+    public static final int DIRECTION_LEFT = 1;
+    public static final int DIRECTION_TOP = 2;
+    public static final int DIRECTION_RIGHT = 3;
+    public static final int DIRECTION_BOTTOM = 4;
 
     private Callback mCallback;
 
@@ -63,19 +69,49 @@ public class RhinoFrameLayout extends FrameLayout {
         return super.dispatchTouchEvent(ev);
     }
 
-    public void setRoundRectRadius(final int radius) {
+    public void setRoundRectRadius(int radius) {
+        setRoundRectRadius(radius, DIRECTION_ALL);
+    }
+
+    public void setRoundRectRadius(int radius, int direction) {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) return;
         if (radius <= 0) {
             setClipToOutline(false);
         } else {
-            setOutlineProvider(new ViewOutlineProvider() {
-                @SuppressLint("NewApi")
-                @Override
-                public void getOutline(View view, Outline outline) {
-                    outline.setRoundRect(0, 0, view.getWidth(), view.getHeight(), radius);
-                }
-            });
+            setOutlineProvider(new RadiusProvider(radius, direction));
             setClipToOutline(true);
+        }
+    }
+
+    @TargetApi(21)
+	private class RadiusProvider extends ViewOutlineProvider {
+        float radius;
+        int direction;
+
+        public RadiusProvider(float radius, int direction) {
+            this.radius = radius;
+            this.direction = direction;
+        }
+
+        @Override
+        public void getOutline(View view, Outline outline) {
+            int intRadius = (int) Math.ceil(radius);
+            switch (direction) {
+                case DIRECTION_LEFT:
+                    outline.setRoundRect(0, 0, view.getWidth() + intRadius, view.getHeight(), radius);
+                    break;
+                case DIRECTION_TOP:
+                    outline.setRoundRect(0, 0, view.getWidth(), view.getHeight() + intRadius, radius);
+                    break;
+                case DIRECTION_RIGHT:
+                    outline.setRoundRect(intRadius, 0, view.getWidth(), view.getHeight(), radius);
+                    break;
+                case DIRECTION_BOTTOM:
+                    outline.setRoundRect(0, intRadius, view.getWidth() + intRadius, view.getHeight(), radius);
+                    break;
+                default:
+                    outline.setRoundRect(0, 0, view.getWidth(), view.getHeight(), radius);
+            }
         }
     }
 
