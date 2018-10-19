@@ -12,13 +12,19 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.KeyEvent;
+import android.widget.LinearLayout;
 import android.widget.TextView;
+
+import com.qq.e.ads.splash.SplashAD;
+import com.qq.e.ads.splash.SplashADListener;
+import com.qq.e.comm.util.AdError;
 
 import java.io.File;
 import java.lang.ref.WeakReference;
 
-public class MainActivity extends Activity {
+public class MainActivity extends Activity implements SplashADListener {
     public static final String ACTION_ADD_LIBRARY = "com.xero.ca.ADD_LIBRARY";
     public static final String ACTION_EDIT_COMMAND = "com.xero.ca.EDIT_COMMAND";
     public static final String ACTION_START_ON_BOOT = "com.xero.ca.START_ON_BOOT";
@@ -45,6 +51,8 @@ public class MainActivity extends Activity {
     private boolean mShowNotification;
     private Intent mKeeperIntent;
     private boolean mIsForeground;
+    private SplashAD splashAD;
+    private boolean mAdDismissed;
 
     private GameBridgeService.Callback gbsCallback = new GameBridgeService.Callback() {
         @Override
@@ -88,6 +96,7 @@ public class MainActivity extends Activity {
         mPreferences = getSharedPreferences(PREFERENCE_NAME, MODE_PRIVATE);
         instance = new WeakReference<>(this);
         mShowNotification = false;
+        mAdDismissed = true;
         showNotification();
         if (getHideSplash() || isSubAction(getIntent().getAction())) {
             onBackPressed();
@@ -96,6 +105,7 @@ public class MainActivity extends Activity {
             setContentView(R.layout.main);
         }
         super.onCreate(bundle);
+        showAd();
         Intent i = getIntent();
         String src = mPreferences.getString("debugSource", "");
         if (ACTION_DEBUG_EXEC.equals(i.getAction()) && !TextUtils.isEmpty(src)) {
@@ -351,6 +361,42 @@ public class MainActivity extends Activity {
         return new RhinoWebView(this).setDelegee(delegee);
     }
 
+    public void showAd() {
+        splashAD = new SplashAD(this,
+                ((LinearLayout) findViewById(R.id.appTitle)),
+                Secret.getGDTAppID(),
+                Secret.getGDTPosID(),
+                this
+        );
+        mAdDismissed = false;
+    }
+
+    @Override
+    public void onADDismissed() {
+        if (mBridgeListener != null) {
+            mBridgeListener.onAdComplete();
+        }
+        mAdDismissed = true;
+    }
+
+    @Override
+    public void onNoAD(AdError error) {
+        onADDismissed();
+        Log.e("CA", error.getErrorMsg());
+    }
+
+    @Override
+    public void onADPresent() {}
+
+    @Override
+    public void onADClicked() {}
+
+    @Override
+    public void onADTick(long millisUntilFinished) {}
+
+    @Override
+    public void onADExposure() {}
+
     public interface BridgeListener {
         boolean applyIntent(Intent intent);
 
@@ -371,5 +417,7 @@ public class MainActivity extends Activity {
         void onRemoteMessage(Message msg);
 
         void onRemoteDisabled();
+
+        void onAdComplete();
     }
 }
