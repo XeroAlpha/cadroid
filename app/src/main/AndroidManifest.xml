@@ -13,7 +13,6 @@
     <uses-permission android:name="android.permission.READ_PHONE_STATE" />
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
 	<uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
-    <uses-permission android:name="android.permission.REQUEST_INSTALL_PACKAGES" />
     <uses-permission android:name="com.xero.ca.RUN_SCRIPT_ACTION" />
 
     <permission android:name="com.xero.ca.RUN_SCRIPT_ACTION" />
@@ -100,8 +99,5 @@
             android:exported="false"
             android:grantUriPermissions="true">
         </provider>
-
-        <service android:name="com.qq.e.comm.DownloadService" android:exported="false" />
-        <activity android:name="com.qq.e.ads.ADActivity" android:configChanges="keyboard|keyboardHidden|orientation|screenSize" />
     </application>
 </manifest>
