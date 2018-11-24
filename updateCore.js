@@ -55,6 +55,10 @@ function makeUpdate(corePath, signPath) {
 		"shell": getShellVersion(grad),
 		"sha1": digestSHA1(fs.readFileSync(corePath + "/pages/hotfix.js"))
 	};
+	data.requirements = [{
+		"type": "minsdk",
+		"value": getMinSDKVersion(grad)
+	}];
 	fs.writeFileSync(corePath + "/pages/hotfix.json", JSON.stringify(data));
 }
 
@@ -106,6 +110,11 @@ function getShellVersion(s) {
 
 function getVersionCode(s) {
 	var r = s.match(/versionCode (\d+)/);
+	if (r) return parseInt(r[1]);
+}
+
+function getMinSDKVersion(s) {
+	var r = s.match(/minSdkVersion (\d+)/);
 	if (r) return parseInt(r[1]);
 }
 
