@@ -166,7 +166,8 @@ public class MainActivity extends Activity {
         return action.equals(ACTION_ADD_LIBRARY) ||
                 action.equals(ACTION_START_ON_BOOT) ||
                 action.equals(ACTION_START_FROM_BACKGROUND) ||
-                action.equals(ACTION_SCRIPT_ACTION);
+                action.equals(ACTION_SCRIPT_ACTION) ||
+                action.equals(ACTION_URI_ACTION);
     }
 
     private void checkHotfix() {
