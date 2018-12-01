@@ -25,6 +25,7 @@ public class MainActivity extends Activity {
     public static final String ACTION_START_FROM_BACKGROUND = "com.xero.ca.ACTION_START_FROM_BACKGROUND";
     public static final String ACTION_START_FROM_SHORTCUT = "com.xero.ca.ACTION_START_FROM_SHORTCUT";
     public static final String ACTION_SCRIPT_ACTION = "com.xero.ca.ACTION_SCRIPT_ACTION";
+    public static final String ACTION_URI_ACTION = "com.xero.ca.ACTION_URI_ACTION";
 
     public static final String ACTION_SHOW_DEBUG = "com.xero.ca.SHOW_DEBUG";
     public static final String ACTION_DEBUG_EXEC = "com.xero.ca.DEBUG_EXEC";
@@ -235,6 +236,10 @@ public class MainActivity extends Activity {
         }
     }
 
+    public boolean isForeground() {
+        return mIsForeground;
+    }
+
     public boolean getHideSplash() {
         return mPreferences.getBoolean(SETTING_HIDE_SPLASH, false);
     }
@@ -268,7 +273,6 @@ public class MainActivity extends Activity {
         if (mShowNotification) return;
         mShowNotification = true;
         if (getHideNotification()) return;
-        //if (KeeperService.instance != null) return;
         mKeeperIntent = new Intent(this, KeeperService.class);
         startService(mKeeperIntent);
     }
@@ -276,7 +280,6 @@ public class MainActivity extends Activity {
     public void hideNotification() {
         if (!mShowNotification) return;
         mShowNotification = false;
-        //if (KeeperService.instance == null) return;
         if (mKeeperIntent != null) {
             stopService(mKeeperIntent);
             mKeeperIntent = null;
@@ -349,6 +352,14 @@ public class MainActivity extends Activity {
 
     public RhinoWebView createWebView(RhinoWebView.Delegee delegee) {
         return new RhinoWebView(this).setDelegee(delegee);
+    }
+
+    public String getGiteeClientId() {
+        return Secret.getGiteeClientId();
+    }
+
+    public String getGiteeClientSecret() {
+        return Secret.getGiteeClientSecret();
     }
 
     public interface BridgeListener {

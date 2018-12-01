@@ -15,6 +15,8 @@ import org.mozilla.javascript.RhinoException;
 import org.mozilla.javascript.Scriptable;
 import org.mozilla.javascript.StackStyle;
 
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
@@ -128,6 +130,16 @@ public class ScriptManager {
 
     public Handler getHandler() {
         return handler;
+    }
+
+    public InputStream open(String path) throws IOException {
+        if (debugFile != null) {
+            File src = new File(debugFile);
+            return new FileInputStream(new File(src.getParent(), path));
+        } else if (bindActivity != null) {
+            return bindActivity.getAssets().open(path);
+        }
+        return null;
     }
 
     class StartCommand implements Runnable {

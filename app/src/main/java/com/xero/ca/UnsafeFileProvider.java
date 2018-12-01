@@ -31,7 +31,9 @@ public class UnsafeFileProvider extends ContentProvider {
         } catch (IOException e) {
             throw new IllegalArgumentException("Failed to resolve canonical path for " + file);
         }
-        mFiles.add(file.getPath());
+        synchronized (mFiles) {
+            mFiles.add(file.getPath());
+        }
         return new Uri.Builder().scheme("content")
                 .authority(authority).path(file.getPath()).build();
     }
@@ -44,7 +46,9 @@ public class UnsafeFileProvider extends ContentProvider {
         } catch (IOException e) {
             throw new IllegalArgumentException("Failed to resolve canonical path for " + file);
         }
-        if (!mFiles.contains(file.getPath())) throw new SecurityException();
+        synchronized (mFiles) {
+            if (!mFiles.contains(file.getPath())) throw new SecurityException();
+        }
         return file;
     }
 

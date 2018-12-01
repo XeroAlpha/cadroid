@@ -128,7 +128,7 @@ function debug(corePath, signPath) {
 	console.log("Updating build.gradle");
 	updateBuild(corePath);
 	console.log("Encrypting...");
-	sign(fs.readFileSync(corePath + "/命令助手.js", 'utf-8'), signPath, scriptPath);
+	sign(require(corePath + "/loader").load(corePath + "/命令助手.js", 'utf-8'), signPath, scriptPath);
 }
 
 function release(corePath, signPath) {

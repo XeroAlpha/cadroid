@@ -4,7 +4,7 @@ import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
 
-public class EditCommandActivity extends Activity {
+public class UriActionActivity extends Activity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -15,11 +15,10 @@ public class EditCommandActivity extends Activity {
     private void processIntent() {
         Intent intent = getIntent();
         if (intent == null) return;
-        Bundle extras = intent.getExtras();
-        if (extras == null) return;
         Intent target = new Intent(this, MainActivity.class);
-        target.setAction(MainActivity.ACTION_EDIT_COMMAND);
-        target.putExtra("text", extras.getString(Intent.EXTRA_TEXT, ""));
+        target.setAction(MainActivity.ACTION_URI_ACTION);
+        target.setDataAndType(intent.getData(), intent.getType());
+        target.putExtras(intent);
         MainActivity.callIntent(this, target);
     }
 }
