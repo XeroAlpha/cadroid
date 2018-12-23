@@ -23,14 +23,7 @@ public class AccessibilitySvc extends AccessibilityService {
     }
 
     public static void notifyKeyEvent(final KeyEvent e) {
-        final MainActivity ins = MainActivity.instance.get();
-        if (ins == null) return;
-        ins.runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                ins.notifyKeyEvent(e);
-            }
-        });
+        ScriptInterface.notifyKeyEvent(e);
     }
 
     public static void setLifeCycleListener(ServiceLifeCycleListener mListener) {

@@ -15,10 +15,9 @@ public class UriActionActivity extends Activity {
     private void processIntent() {
         Intent intent = getIntent();
         if (intent == null) return;
-        Intent target = new Intent(this, MainActivity.class);
-        target.setAction(MainActivity.ACTION_URI_ACTION);
+        Intent target = new Intent(ScriptInterface.ACTION_URI_ACTION);
         target.setDataAndType(intent.getData(), intent.getType());
         target.putExtras(intent);
-        MainActivity.callIntent(this, target);
+        ScriptInterface.callIntent(this, target);
     }
 }

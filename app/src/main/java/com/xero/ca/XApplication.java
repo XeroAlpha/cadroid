@@ -44,21 +44,21 @@ public class XApplication extends Application {
             Log.e(TAG, "I/O Error", err);
         }
         ctx.startActivity(i);
-        android.os.Process.killProcess(android.os.Process.myPid());
-        System.exit(1);
     }
 
     @Override
     public void onCreate() {
         super.onCreate();
         TCAgent.init(this.getApplicationContext(), Secret.getTDToken(), "default");
-        Thread.setDefaultUncaughtExceptionHandler(new ErrorCaughter());
+        Thread.setDefaultUncaughtExceptionHandler(new ErrorCatcher());
     }
 
-    public class ErrorCaughter implements Thread.UncaughtExceptionHandler {
+    public class ErrorCatcher implements Thread.UncaughtExceptionHandler {
         @Override
         public void uncaughtException(Thread t, Throwable e) {
             reportError(XApplication.this, t, e);
+            android.os.Process.killProcess(android.os.Process.myPid());
+            System.exit(1);
         }
     }
 }

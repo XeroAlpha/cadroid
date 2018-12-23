@@ -1,4 +1,4 @@
-package com.xero.ca;
+package com.xero.ca.script;
 
 import android.content.Context;
 import android.graphics.Bitmap;
@@ -14,6 +14,7 @@ import android.webkit.WebChromeClient;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
 
+@ScriptObject
 public class RhinoWebView extends WebView {
     public RhinoWebView(Context context) {
         super(context);
@@ -143,6 +144,7 @@ public class RhinoWebView extends WebView {
         }
     }
 
+    @ScriptObject
     public interface Delegee {
         void onCloseWindow(WebView window);
         boolean onConsoleMessage(ConsoleMessage consoleMessage);

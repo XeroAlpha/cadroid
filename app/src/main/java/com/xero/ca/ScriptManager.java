@@ -1,16 +1,12 @@
 package com.xero.ca;
 
-import android.app.Activity;
 import android.os.Build;
 import android.os.Handler;
 import android.os.Looper;
 import android.util.Log;
 
-import com.tendcloud.tenddata.TCAgent;
-
 import org.mozilla.javascript.Context;
 import org.mozilla.javascript.Function;
-import org.mozilla.javascript.NativeJavaClass;
 import org.mozilla.javascript.RhinoException;
 import org.mozilla.javascript.Scriptable;
 import org.mozilla.javascript.StackStyle;
@@ -34,12 +30,17 @@ public class ScriptManager {
     private Context cx = null;
     private Scriptable scope = null;
     private Handler handler = null;
-    private Activity bindActivity = null;
+    private android.content.Context bindContext = null;
+    private ScriptInterface scriptInterface = null;
     private String debugFile = null;
     private Hotfix hotfix = null;
     private boolean running = false;
 
     private ScriptManager() {}
+
+    public synchronized static boolean hasInstance() {
+        return instance.get() != null;
+    }
 
     public synchronized static ScriptManager getInstance() {
         ScriptManager m = instance.get();
@@ -51,15 +52,21 @@ public class ScriptManager {
     }
 
     public static ScriptManager createDebuggable(String debugFile) {
-        ScriptManager r = new ScriptManager();
-        r.debugFile = debugFile;
-        return r;
+        ScriptManager m = instance.get();
+        if (m == null) {
+            m = new ScriptManager();
+            m.debugFile = debugFile;
+            instance = new WeakReference<>(m);
+            return m;
+        } else {
+            return null;
+        }
     }
 
-    public synchronized void startScript(Activity ctx) {
+    public synchronized void startScript(android.content.Context ctx) {
         if (running) return;
         running = true;
-        bindActivity = ctx;
+        bindContext = ctx;
         Thread th = new Thread(Thread.currentThread().getThreadGroup(), new StartCommand(), "CA_Loader", 262144);
         th.start();
     }
@@ -81,8 +88,12 @@ public class ScriptManager {
     public synchronized void callScriptHook(String name, Object[] args) {
         if (handler == null) return;
         Object obj = scope.get(name, scope);
-        if (obj != null && obj instanceof Function) {
-            ((Function) obj).call(cx, scope, scope, args);
+        if (obj instanceof Function) {
+            try {
+                ((Function) obj).call(cx, scope, scope, args);
+            } catch (Exception ex) {
+                //Ignore this exception
+            }
         }
     }
 
@@ -90,21 +101,24 @@ public class ScriptManager {
         hotfix = new Hotfix(coreFile, signFile, verify, versionCode);
     }
 
-    public synchronized Context initContext() {
+    protected synchronized Context initContext() {
         //Context context = Context.enter();
         Context context = new com.faendir.rhino_android.RhinoAndroidHelper().enterContext();
         context.setOptimizationLevel(-1);
         return context;
     }
 
-    public Scriptable initScope(Context cx) {
+    protected Scriptable initScope(Context cx) {
         Scriptable s = cx.initStandardObjects();
-        s.put("ScriptActivity", s, bindActivity);
-        s.put("TCAgent", s, new NativeJavaClass(s, TCAgent.class));
+        s.put("ScriptInterface", s, getScriptInterface());
         return s;
     }
 
-    public Reader getScriptReader() throws IOException {
+    protected ScriptInterface initScriptInterface() {
+        return new ScriptInterface(this);
+    }
+
+    protected Reader getScriptReader() throws IOException {
         if (debugFile != null) return new FileReader(debugFile);
         if (hotfix != null) {
             try {
@@ -113,7 +127,7 @@ public class ScriptManager {
                 Log.e("CA", "Loading hotfix failed", e);
             }
         }
-        return new InputStreamReader(ScriptFileStream.fromAsset(bindActivity, "script.js"));
+        return new InputStreamReader(ScriptFileStream.fromAsset(bindContext, "script.js"));
     }
 
     public Context getContext() {
@@ -124,8 +138,13 @@ public class ScriptManager {
         return scope;
     }
 
-    public Activity getBindActivity() {
-        return bindActivity;
+    public android.content.Context getBindContext() {
+        return bindContext;
+    }
+
+    public ScriptInterface getScriptInterface() {
+        if (scriptInterface == null) scriptInterface = initScriptInterface();
+        return scriptInterface;
     }
 
     public Handler getHandler() {
@@ -136,8 +155,8 @@ public class ScriptManager {
         if (debugFile != null) {
             File src = new File(debugFile);
             return new FileInputStream(new File(src.getParent(), path));
-        } else if (bindActivity != null) {
-            return bindActivity.getAssets().open(path);
+        } else if (bindContext != null) {
+            return bindContext.getAssets().open(path);
         }
         return null;
     }
@@ -151,7 +170,7 @@ public class ScriptManager {
             try {
                 cx.evaluateReader(scope, getScriptReader(), "命令助手", 0, null);
             } catch (Exception e) {
-                XApplication.reportError(bindActivity.getApplicationContext(), Thread.currentThread(), new SecurityException("Fail to decode and execute the script.", e));
+                XApplication.reportError(bindContext.getApplicationContext(), Thread.currentThread(), new SecurityException("Fail to decode and execute the script.", e));
                 return;
             }
             handler = new Handler();
@@ -173,11 +192,8 @@ public class ScriptManager {
         @Override
         public void run() {
             if (callUnload) callScriptHook("unload", new Object[]{});
-            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR2) {
-                handler.getLooper().quitSafely();
-            } else {
-                handler.getLooper().quit();
-            }
+            scriptInterface.clearBridge();
+            handler.getLooper().quit();
         }
     }
 
@@ -195,7 +211,7 @@ public class ScriptManager {
         private int versionCode;
 
         public InputStream getInputStream() throws IOException {
-            return ScriptFileStream.fromFile(bindActivity, coreFile, signFile, verify, versionCode);
+            return ScriptFileStream.fromFile(bindContext, coreFile, signFile, verify, versionCode);
         }
     }
 }

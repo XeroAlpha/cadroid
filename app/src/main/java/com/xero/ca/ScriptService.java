@@ -9,30 +9,68 @@ import android.content.Intent;
 import android.graphics.BitmapFactory;
 import android.os.Build;
 import android.os.IBinder;
+import android.text.TextUtils;
 
+import java.io.File;
 import java.lang.ref.WeakReference;
 
-public class KeeperService extends Service {
-    public static WeakReference<KeeperService> instance = new WeakReference<>(null);
+public class ScriptService extends Service {
+    private static WeakReference<ScriptService> sInstance = null;
     private static final String DEFAULT_CHANNEL = "default";
 
+    private ScriptManager mManager;
+    private Intent mLastIntent;
+
     @Override
-    public void onCreate() {
-        instance = new WeakReference<>(this);
-        showNotification();
-        super.onCreate();
-    }
+	public int onStartCommand(Intent intent, int flags, int startId) {
+        mLastIntent = intent;
+        if (sInstance != null) {
+            return super.onStartCommand(intent, flags, startId);
+        }
+        sInstance = new WeakReference<>(this);
+        String src = new Preference(this).getDebugSource();
+        if (ScriptInterface.ACTION_DEBUG_EXEC.equals(intent.getAction()) && !TextUtils.isEmpty(src)) {
+            mManager = ScriptManager.createDebuggable(src);
+        } else {
+            mManager = ScriptManager.getInstance();
+        }
+        if (mManager == null || mManager.isRunning()) {
+            stopSelf();
+        } else {
+            checkHotfix();
+            mManager.startScript(this);
+        }
+		return super.onStartCommand(intent, flags, startId);
+	}
 
     @Override
     public void onDestroy() {
-        instance.clear();
-        hideNotification();
+        mManager.endScript();
         super.onDestroy();
     }
 
     @Override
-    public IBinder onBind(Intent intent) {
-        return null;
+	public IBinder onBind(Intent intent) {
+		return null;
+	}
+
+    private void checkHotfix() {
+        File base = getDir("rhino", MODE_PRIVATE);
+        File core = new File(base, "core.js");
+        if (!core.isFile()) return;
+        File sign = new File(base, "core.sign");
+        mManager.setHotfix(core.getPath(), sign.getPath(), Secret.getVerifyKey(), BuildConfig.VERSION_CODE);
+    }
+
+    @Override
+    public void startActivity(Intent intent) {
+        if (ScriptInterface.applyIntent(intent)) {
+            super.startActivity(intent);
+        }
+    }
+
+    public Intent getLastIntent() {
+        return mLastIntent;
     }
 
     public void showNotification() {

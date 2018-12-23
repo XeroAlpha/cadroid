@@ -17,7 +17,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 public class UnsafeFileProvider extends ContentProvider {
-    private static Set<String> mFiles = new HashSet<>();
+    private static final Set<String> mFiles = new HashSet<>();
     private static final String authority = "com.xero.ca.FileProvider";
 
     @Override

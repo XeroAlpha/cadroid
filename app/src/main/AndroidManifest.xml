@@ -74,7 +74,13 @@
                 <data android:scheme="cbassistant" />
             </intent-filter>
         </activity>
+        <activity android:name=".PermissionRequestActivity"
+            android:theme="@style/AppTheme.Translucent" />
+        <activity android:name=".ReturnDataActivity"
+            android:theme="@style/AppTheme.Translucent" />
+        <activity android:name=".SplashActivity" />
 
+        <service android:name=".ScriptService" />
         <service
             android:name=".AccessibilitySvc"
             android:permission="android.permission.BIND_ACCESSIBILITY_SERVICE">
@@ -92,7 +98,6 @@
             </intent-filter>
         </service>
         <service android:name=".ScriptActionService" />
-        <service android:name=".KeeperService" />
 
         <receiver android:name=".BootReceiver">
             <intent-filter>

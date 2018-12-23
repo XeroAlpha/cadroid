@@ -41,7 +41,7 @@ public class GameBridgeService extends Service implements Handler.Callback {
     public IBinder onBind(Intent intent) {
         if (instance.get() != null) return null;
         instance = new WeakReference<>(this);
-        if (MainActivity.instance.get() == null) {
+        if (ScriptManager.hasInstance()) {
             runMain();
         }
         if (mCallback != null) mCallback.onRemoteEnabled();
@@ -67,7 +67,7 @@ public class GameBridgeService extends Service implements Handler.Callback {
     }
 
     private void runMain() {
-		/*
+		/* TODO: fix it
 		Intent i = new Intent(this, MainActivity.class).setAction(MainActivity.ACTION_START_FROM_BACKGROUND).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_FROM_BACKGROUND);
 		startActivity(i);
 		*BUG：从适配器打开时，适配器所在Activity闪退

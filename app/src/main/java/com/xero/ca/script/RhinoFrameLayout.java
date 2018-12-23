@@ -1,4 +1,4 @@
-package com.xero.ca;
+package com.xero.ca.script;
 
 import android.annotation.TargetApi;
 import android.content.Context;
@@ -11,6 +11,7 @@ import android.view.View;
 import android.view.ViewOutlineProvider;
 import android.widget.FrameLayout;
 
+@ScriptObject
 public class RhinoFrameLayout extends FrameLayout {
     public static final int RETURN_TRUE = 1;
     public static final int RETURN_FALSE = -1;
@@ -115,6 +116,7 @@ public class RhinoFrameLayout extends FrameLayout {
         }
     }
 
+    @ScriptObject
     public interface Callback {
         int dispatchKeyEvent(KeyEvent event);
         int dispatchTouchEvent(MotionEvent ev);

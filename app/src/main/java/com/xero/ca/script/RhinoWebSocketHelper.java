@@ -1,4 +1,4 @@
-package com.xero.ca;
+package com.xero.ca.script;
 
 import org.java_websocket.WebSocket;
 import org.java_websocket.handshake.ClientHandshake;
@@ -6,6 +6,7 @@ import org.java_websocket.server.WebSocketServer;
 
 import java.net.InetSocketAddress;
 
+@ScriptObject
 public class RhinoWebSocketHelper extends WebSocketServer {
     private DelegateInterface delegate;
 
@@ -40,6 +41,7 @@ public class RhinoWebSocketHelper extends WebSocketServer {
         delegate.onStart();
     }
 
+    @ScriptObject
     public interface DelegateInterface {
         void onOpen(WebSocket conn, ClientHandshake handshake);
         void onClose(WebSocket conn, int code, String reason, boolean remote);

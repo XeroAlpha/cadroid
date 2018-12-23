@@ -9,10 +9,9 @@ public class BootReceiver extends BroadcastReceiver {
     @Override
     public void onReceive(Context context, Intent intent) {
         if (Intent.ACTION_BOOT_COMPLETED.equals(intent.getAction())) {
-            if (context.getSharedPreferences(MainActivity.PREFERENCE_NAME, Activity.MODE_PRIVATE).getBoolean(MainActivity.SETTING_START_ON_BOOT, false)) {
+            if (new Preference(context).getBootStart()) {
                 Intent i = new Intent(context, MainActivity.class);
                 i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                i.setAction(MainActivity.ACTION_START_ON_BOOT);
                 context.startActivity(i);
             }
         }
