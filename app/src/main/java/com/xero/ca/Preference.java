@@ -11,10 +11,18 @@ public class Preference {
     public static final String SETTING_START_ON_BOOT = "bootStart";
     public static final String PREFERENCE_NAME = "user_settings";
 
+    private static Preference sInstance = null;
+
     private SharedPreferences mPreferences;
 
-    public Preference(Context context) {
+    private Preference(Context context) {
         mPreferences = context.getSharedPreferences(PREFERENCE_NAME, Context.MODE_PRIVATE);
+    }
+
+    public static Preference getInstance(Context context) {
+        if (sInstance != null) return sInstance;
+        sInstance = new Preference(context);
+        return sInstance;
     }
 
     @ScriptObject

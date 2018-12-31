@@ -1,6 +1,7 @@
 package com.xero.ca;
 
 import android.app.Activity;
+import android.content.res.Configuration;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.widget.TextView;
@@ -17,6 +18,16 @@ public class SplashActivity extends Activity {
     protected void onDestroy() {
         ScriptInterface.onSplashActivityDestroy(this);
         super.onDestroy();
+    }
+
+    @Override
+    public void onConfigurationChanged(Configuration newConfig) {
+        super.onConfigurationChanged(newConfig);
+    }
+
+    @Override
+    public void onBackPressed() {
+        //do nothing
     }
 
     public void setLoadingTitle(String title) {

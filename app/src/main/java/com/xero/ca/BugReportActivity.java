@@ -18,7 +18,8 @@ public class BugReportActivity extends Activity {
         Bundle ex = getIntent().getExtras();
         if (ex != null) {
             final String em = ex.getString("exception", "");
-            new AlertDialog.Builder(this)
+            final int epid = ex.getInt("pid", 0);
+            AlertDialog.Builder builder = new AlertDialog.Builder(this)
                     .setTitle("错误")
                     .setCancelable(false)
                     .setMessage("您好，命令助手出现了一个错误。您可以将这个错误反馈给我们，来推动命令助手的更新。您也可以选择忽略。" +
@@ -36,16 +37,18 @@ public class BugReportActivity extends Activity {
                         public void onClick(DialogInterface dia, int w) {
                             finish();
                         }
-                    })
-                    .setNeutralButton("立即停止", new DialogInterface.OnClickListener() {
-                        @Override
-                        public void onClick(DialogInterface dia, int w) {
-                            finish();
-                            android.os.Process.killProcess(android.os.Process.myPid());
-                            System.exit(1);
-                        }
-                    })
-                    .show();
+                    });
+            if (epid != 0) {
+                builder.setNeutralButton("立即停止", new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dia, int w) {
+                        finish();
+                        android.os.Process.killProcess(epid);
+                        System.exit(0);
+                    }
+                });
+            }
+            builder.show();
         }
     }
 

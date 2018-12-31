@@ -18,5 +18,4 @@ echo Aligning...
 "%BUILD_TOOL_PATH%\zipalign.exe" -f 4 .\app\build\outputs\apk\release\app-release-unaligned.apk .\app\release\app-release.apk
 node updateCore.js export %CORE_PATH% app\signatures\release.signature
 echo Done.
-start explorer.exe .\app\release
 echo Package has been exported to app\release

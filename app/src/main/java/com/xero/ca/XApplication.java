@@ -58,7 +58,7 @@ public class XApplication extends Application {
         public void uncaughtException(Thread t, Throwable e) {
             reportError(XApplication.this, t, e);
             android.os.Process.killProcess(android.os.Process.myPid());
-            System.exit(1);
+            System.exit(0);
         }
     }
 }

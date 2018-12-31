@@ -3,6 +3,7 @@ package com.xero.ca;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
+import android.os.Build;
 import android.os.Bundle;
 
 public class ReturnDataActivity extends Activity {
@@ -30,12 +31,17 @@ public class ReturnDataActivity extends Activity {
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        finish();
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            finishAndRemoveTask();
+        } else {
+            finish();
+        }
         ScriptInterface.onActivityResult(requestCode, resultCode, data);
     }
 
     public static Intent createIntent(Context context, Intent intent, int requestCode) {
         return new Intent(context, ReturnDataActivity.class)
+                .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
                 .putExtra(EXTRA_INTENT, intent)
                 .putExtra(EXTRA_REQUEST_CODE, requestCode);
     }

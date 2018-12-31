@@ -53,7 +53,7 @@ public class ScriptManager {
 
     public static ScriptManager createDebuggable(String debugFile) {
         ScriptManager m = instance.get();
-        if (m == null) {
+        if (m == null || !m.isRunning()) {
             m = new ScriptManager();
             m.debugFile = debugFile;
             instance = new WeakReference<>(m);
@@ -143,7 +143,6 @@ public class ScriptManager {
     }
 
     public ScriptInterface getScriptInterface() {
-        if (scriptInterface == null) scriptInterface = initScriptInterface();
         return scriptInterface;
     }
 
@@ -165,6 +164,7 @@ public class ScriptManager {
         @Override
         public void run() {
             Looper.prepare();
+            scriptInterface = initScriptInterface();
             cx = initContext();
             scope = initScope(cx);
             try {
@@ -179,6 +179,7 @@ public class ScriptManager {
             cx = null;
             scope = null;
             handler = null;
+            scriptInterface = null;
         }
     }
 

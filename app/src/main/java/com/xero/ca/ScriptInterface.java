@@ -3,6 +3,8 @@ package com.xero.ca;
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
+import android.os.Build;
+import android.os.Handler;
 import android.os.Message;
 import android.view.KeyEvent;
 
@@ -30,6 +32,8 @@ public class ScriptInterface {
 	private Context mContext;
 	private SplashActivity mBindActivity;
 	private ScriptService mBindService;
+	private Thread mUiThread;
+	private Handler mUiHandler;
 	private Preference mPreference;
     private Bridge mBridge;
     private CallbackProxy mCallbackProxy;
@@ -41,8 +45,11 @@ public class ScriptInterface {
         if (mContext instanceof ScriptService) {
             mBindService = (ScriptService) mContext;
         }
-        mPreference = new Preference(mContext);
+        mUiHandler = new Handler(mContext.getMainLooper());
+        mUiThread = mContext.getMainLooper().getThread();
+        mPreference = Preference.getInstance(mContext);
 		mCallbackProxy = new CallbackProxy();
+        if (!mPreference.getHideNotification()) showNotification();
 	}
 
     public static void callIntent(Context ctx, Intent intent) {
@@ -51,7 +58,7 @@ public class ScriptInterface {
             if (instance.mBridge != null) instance.mBridge.onNewIntent(intent);
         } else {
             ctx.startService(intent.setClass(ctx, ScriptService.class));
-            if (!isSubAction(intent.getAction())) {
+            if (!isSubAction(intent.getAction()) && !Preference.getInstance(ctx).getHideSplash()) {
                 ctx.startActivity(new Intent(ctx, SplashActivity.class));
             }
         }
@@ -88,13 +95,12 @@ public class ScriptInterface {
         }
     }
 
-    public static PermissionRequestActivity.Callback onBeginPermissionRequest(PermissionRequestActivity activity) {
+    public static void onBeginPermissionRequest(PermissionRequestActivity activity) {
         ScriptInterface instance = getInstance();
         if (instance != null) {
             Bridge bridge = instance.mBridge;
-            if (bridge != null) return bridge.onBeginPermissonRequest(activity);
+            if (bridge != null) bridge.onBeginPermissonRequest(activity);
         }
-        return null;
     }
 
     public static boolean applyIntent(Intent intent) {
@@ -118,12 +124,21 @@ public class ScriptInterface {
         Intent i = new Intent(mContext, BugReportActivity.class);
         i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         i.putExtra("exception", techInfo == null ? "" : techInfo);
+        i.putExtra("pid", android.os.Process.myPid());
         mContext.startActivity(i);
     }
 
     public void setLoadingTitle(String title) {
         if (mBindActivity != null) {
             mBindActivity.setLoadingTitle(title);
+        }
+    }
+
+    public void runOnUiThread(Runnable action) {
+        if (Thread.currentThread() != mUiThread) {
+            mUiHandler.post(action);
+        } else {
+            action.run();
         }
     }
 
@@ -165,7 +180,13 @@ public class ScriptInterface {
 
     public void quit() {
 	    if (mBindService != null) mBindService.stopSelf();
-        if (mBindActivity != null) mBindActivity.finish();
+        if (mBindActivity != null) {
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                mBindActivity.finishAndRemoveTask();
+            } else {
+                mBindActivity.finish();
+            }
+        }
     }
 
     public int checkSelfPermission(String permission) {
@@ -202,7 +223,6 @@ public class ScriptInterface {
     public void showNotification() {
         if (mIsForeground) return;
         mIsForeground = true;
-        if (mPreference.getHideNotification()) return;
         if (mBindService != null) {
             mBindService.showNotification();
         }
@@ -289,7 +309,7 @@ public class ScriptInterface {
 
 		void onActivityResult(int requestCode, int resultCode, Intent data);
 
-		PermissionRequestActivity.Callback onBeginPermissonRequest(PermissionRequestActivity activity);
+		void onBeginPermissonRequest(PermissionRequestActivity activity);
 
 		void onNewIntent(Intent intent);
 

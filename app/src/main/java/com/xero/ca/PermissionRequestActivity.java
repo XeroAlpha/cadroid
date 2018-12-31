@@ -7,12 +7,14 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.support.annotation.NonNull;
 
+import com.xero.ca.script.ScriptObject;
+
 public class PermissionRequestActivity extends Activity {
     private Callback mCallback;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        mCallback = ScriptInterface.onBeginPermissionRequest(this);
+        ScriptInterface.onBeginPermissionRequest(this);
         if (mCallback == null) {
             new Handler().post(new Runnable() {
                 @Override
@@ -31,10 +33,11 @@ public class PermissionRequestActivity extends Activity {
 
     @Override
     protected void onDestroy() {
-        mCallback.onEndPermissionRequest(this);
+        if (mCallback != null) mCallback.onEndPermissionRequest(this);
         super.onDestroy();
     }
 
+    @ScriptObject
     @Override
     public boolean shouldShowRequestPermissionRationale(@NonNull String permission) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
@@ -43,6 +46,12 @@ public class PermissionRequestActivity extends Activity {
         return false;
     }
 
+    @ScriptObject
+    public void setCallback(Callback callback) {
+        mCallback = callback;
+    }
+
+    @ScriptObject
     public void requestPermissionsCompat(final int requestCode, final String[] permissions) {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
             requestPermissions(permissions, requestCode);
@@ -65,6 +74,7 @@ public class PermissionRequestActivity extends Activity {
         }
     }
 
+    @ScriptObject
     public interface Callback {
         void onRequestPermissionsResult(PermissionRequestActivity activity, int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults);
 
