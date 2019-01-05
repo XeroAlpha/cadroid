@@ -28,6 +28,10 @@ public class ScriptService extends Service {
             return super.onStartCommand(intent, flags, startId);
         }
         sInstance = new WeakReference<>(this);
+        if (intent == null) {
+            stopSelf();
+            return super.onStartCommand(null, flags, startId);
+        }
         String src = Preference.getInstance(this).getDebugSource();
         if (ScriptInterface.ACTION_DEBUG_EXEC.equals(intent.getAction()) && !TextUtils.isEmpty(src)) {
             mManager = ScriptManager.createDebuggable(src);

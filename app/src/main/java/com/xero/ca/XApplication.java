@@ -29,12 +29,9 @@ public class XApplication extends Application {
     public static void reportError(Context ctx, Thread t, Throwable e) {
         TCAgent.onError(ctx, e);
         Log.e(TAG, t.toString(), e);
-        Intent i = new Intent(ctx, BugReportActivity.class);
-        i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         StringWriter s = new StringWriter();
         s.append("Version ").append(getPackageVersion(ctx)).append("\n");
         e.printStackTrace(new PrintWriter(s));
-        i.putExtra("exception", s.toString());
         try {
             PrintWriter fs = new PrintWriter(new FileOutputStream(Environment.getExternalStorageDirectory().getAbsolutePath() + "/com.xero.ca.error.log", true));
             fs.println("* Error: " + new Date().toLocaleString());
@@ -43,7 +40,7 @@ public class XApplication extends Application {
         } catch (Exception err) {
             Log.e(TAG, "I/O Error", err);
         }
-        ctx.startActivity(i);
+        ctx.startActivity(BugReportActivity.createIntent(ctx, s.toString(), 0));
     }
 
     @Override

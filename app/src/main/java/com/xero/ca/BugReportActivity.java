@@ -6,6 +6,7 @@ import android.content.ClipData;
 import android.content.ClipboardManager;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.os.Bundle;
 
 public class BugReportActivity extends Activity {
@@ -55,5 +56,13 @@ public class BugReportActivity extends Activity {
     private void setClipText(String str) {
         ClipboardManager cm = ((ClipboardManager) getSystemService(Context.CLIPBOARD_SERVICE));
         if (cm != null) cm.setPrimaryClip(ClipData.newPlainText("", str));
+    }
+
+    public static Intent createIntent(Context context, String message, int sourcePid) {
+        Intent i = new Intent(context, BugReportActivity.class);
+        i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        i.putExtra("exception", message);
+        i.putExtra("pid", sourcePid);
+        return i;
     }
 }

@@ -121,11 +121,7 @@ public class ScriptInterface {
     }
 
     public void reportError(String techInfo) {
-        Intent i = new Intent(mContext, BugReportActivity.class);
-        i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-        i.putExtra("exception", techInfo == null ? "" : techInfo);
-        i.putExtra("pid", android.os.Process.myPid());
-        mContext.startActivity(i);
+        mContext.startActivity(BugReportActivity.createIntent(mContext, techInfo == null ? "" : techInfo, android.os.Process.myPid()));
     }
 
     public void setLoadingTitle(String title) {
