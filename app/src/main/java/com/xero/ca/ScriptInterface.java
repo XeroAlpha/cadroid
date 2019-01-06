@@ -59,7 +59,7 @@ public class ScriptInterface {
         } else {
             ctx.startService(intent.setClass(ctx, ScriptService.class));
             if (!isSubAction(intent.getAction()) && !Preference.getInstance(ctx).getHideSplash()) {
-                ctx.startActivity(new Intent(ctx, SplashActivity.class));
+                ctx.startActivity(new Intent(ctx, SplashActivity.class).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK));
             }
         }
     }
@@ -73,11 +73,13 @@ public class ScriptInterface {
                 action.equals(ACTION_URI_ACTION);
     }
 
-    public static void onSplashActivityCreate(SplashActivity activity) {
+    public static boolean onSplashActivityCreate(SplashActivity activity) {
         ScriptInterface instance = getInstance();
         if (instance != null) {
             instance.mBindActivity = activity;
+            return true;
         }
+        return false;
     }
 
     public static void onSplashActivityDestroy(SplashActivity activity) {
@@ -190,7 +192,7 @@ public class ScriptInterface {
     }
 
     public void beginPermissonRequest() {
-        mContext.startActivity(new Intent(mContext, PermissionRequestActivity.class));
+        mContext.startActivity(new Intent(mContext, PermissionRequestActivity.class).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK));
     }
 
     public void startActivityForResult(Intent intent, int requestCode) {

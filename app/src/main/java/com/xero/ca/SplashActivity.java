@@ -11,7 +11,9 @@ public class SplashActivity extends Activity {
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         setContentView(R.layout.main);
         super.onCreate(savedInstanceState);
-        ScriptInterface.onSplashActivityCreate(this);
+        if (!ScriptInterface.onSplashActivityCreate(this)) {
+            finish();
+        }
     }
 
     @Override
