@@ -8,7 +8,7 @@ cd /d %CORE_PATH%
 node script_export.js
 cd  /d %LCD%
 echo Compiling...
-cmd /C gradlew :app:assembleRelease
+cmd /C gradlew :app:buildRelease
 node updateCore.js release %CORE_PATH% app\signatures\release.signature
 echo Assembling...
 cmd /C gradlew :app:assembleRelease

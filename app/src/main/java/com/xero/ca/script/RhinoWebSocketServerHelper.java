@@ -7,10 +7,10 @@ import org.java_websocket.server.WebSocketServer;
 import java.net.InetSocketAddress;
 
 @ScriptObject
-public class RhinoWebSocketHelper extends WebSocketServer {
+public class RhinoWebSocketServerHelper extends WebSocketServer {
     private DelegateInterface delegate;
 
-    public RhinoWebSocketHelper(int port, DelegateInterface delegate) {
+    public RhinoWebSocketServerHelper(int port, DelegateInterface delegate) {
         super(new InetSocketAddress(port));
         if (delegate == null) throw new IllegalArgumentException("Delegate can't be null");
         this.delegate = delegate;

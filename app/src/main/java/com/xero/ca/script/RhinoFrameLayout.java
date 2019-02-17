@@ -50,7 +50,7 @@ public class RhinoFrameLayout extends FrameLayout {
     @Override
 
     public boolean dispatchKeyEvent(KeyEvent event) {
-        int r = mCallback.dispatchKeyEvent(event);
+        int r = mCallback.dispatchKeyEvent(event, this);
         if (r == RETURN_TRUE) {
             return true;
         } else if (r == RETURN_FALSE) {
@@ -61,7 +61,7 @@ public class RhinoFrameLayout extends FrameLayout {
 
     @Override
     public boolean dispatchTouchEvent(MotionEvent ev) {
-        int r = mCallback.dispatchTouchEvent(ev);
+        int r = mCallback.dispatchTouchEvent(ev, this);
         if (r == RETURN_TRUE) {
             return true;
         } else if (r == RETURN_FALSE) {
@@ -118,18 +118,18 @@ public class RhinoFrameLayout extends FrameLayout {
 
     @ScriptObject
     public interface Callback {
-        int dispatchKeyEvent(KeyEvent event);
-        int dispatchTouchEvent(MotionEvent ev);
+        int dispatchKeyEvent(KeyEvent event, RhinoFrameLayout thisObj);
+        int dispatchTouchEvent(MotionEvent ev, RhinoFrameLayout thisObj);
     }
 
     private class DefaultCallback implements Callback {
         @Override
-        public int dispatchKeyEvent(KeyEvent event) {
+        public int dispatchKeyEvent(KeyEvent event, RhinoFrameLayout thisObj) {
             return RETURN_DEFAULT;
         }
 
         @Override
-        public int dispatchTouchEvent(MotionEvent ev) {
+        public int dispatchTouchEvent(MotionEvent ev, RhinoFrameLayout thisObj) {
             return RETURN_DEFAULT;
         }
     }

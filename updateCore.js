@@ -24,7 +24,7 @@ function crc32wrap(buffer) {
 }
 
 function addDexVerification(content) {
-	var crc = crc32wrap(fs.readFileSync(cwd + "/app/build/intermediates/transforms/dexMerger/release/0/classes.dex")).toString(16);
+	var crc = crc32wrap(fs.readFileSync(cwd + "/app/build/intermediates/dex/release/mergeDexRelease/out/classes.dex")).toString(16);
 	console.log("Current dex crc32: " + crc.toUpperCase());
 	return content.replace(/\$dexCrc\$/g, crc);
 }

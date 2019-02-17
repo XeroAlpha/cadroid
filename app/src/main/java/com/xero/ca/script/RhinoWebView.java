@@ -30,15 +30,19 @@ public class RhinoWebView extends WebView {
 
     public RhinoWebView setDelegee(Delegee delegee) {
         if (delegee == null) throw new IllegalArgumentException();
-        setWebChromeClient(new ChromeClientDelegetor(delegee));
-        setWebViewClient(new WebViewClientDelegator(delegee));
+        setWebChromeClient(new ChromeClientDelegetor(this, delegee));
+        setWebViewClient(new WebViewClientDelegator(this, delegee));
+        IDelegator iDelegator = new IDelegator(this, delegee);
+        setDownloadListener(iDelegator);
         return this;
     }
 
     public static class ChromeClientDelegetor extends WebChromeClient {
         Delegee delegee;
+        WebView parent;
 
-        public ChromeClientDelegetor(Delegee delegee) {
+        public ChromeClientDelegetor(WebView parent, Delegee delegee) {
+            this.parent = parent;
             this.delegee = delegee;
         }
 
@@ -49,7 +53,7 @@ public class RhinoWebView extends WebView {
 
         @Override
         public boolean onConsoleMessage(ConsoleMessage consoleMessage) {
-            return delegee.onConsoleMessage(consoleMessage);
+            return delegee.onConsoleMessage(parent, consoleMessage);
         }
 
         @Override
@@ -110,8 +114,10 @@ public class RhinoWebView extends WebView {
 
     public static class WebViewClientDelegator extends WebViewClient {
         Delegee delegee;
+        WebView parent;
 
-        public WebViewClientDelegator(Delegee delegee) {
+        public WebViewClientDelegator(WebView parent, Delegee delegee) {
+            this.parent = parent;
             this.delegee = delegee;
         }
 
@@ -133,21 +139,23 @@ public class RhinoWebView extends WebView {
 
     public static class IDelegator implements DownloadListener {
         Delegee delegee;
+        WebView parent;
 
-        public IDelegator(Delegee delegee) {
+        public IDelegator(WebView parent, Delegee delegee) {
+            this.parent = parent;
             this.delegee = delegee;
         }
 
         @Override
         public void onDownloadStart(String url, String userAgent, String contentDisposition, String mimetype, long contentLength) {
-            delegee.onDownloadStart(url, userAgent, contentDisposition, mimetype, contentLength);
+            delegee.onDownloadStart(parent, url, userAgent, contentDisposition, mimetype, contentLength);
         }
     }
 
     @ScriptObject
     public interface Delegee {
         void onCloseWindow(WebView window);
-        boolean onConsoleMessage(ConsoleMessage consoleMessage);
+        boolean onConsoleMessage(WebView view, ConsoleMessage consoleMessage);
         boolean onCreateWindow(WebView view, boolean isDialog, boolean isUserGesture, Message resultMsg);
         boolean onJsAlert(WebView view, String url, String message, JsResult result);
         boolean onJsBeforeUnload(WebView view, String url, String message, JsResult result);
@@ -162,6 +170,6 @@ public class RhinoWebView extends WebView {
         void onLoadResource(WebView view, String url);
         void onPageFinished(WebView view, String url);
         void onPageStarted(WebView view, String url, Bitmap favicon);
-        void onDownloadStart(String url, String userAgent, String contentDisposition, String mimetype, long contentLength);
+        void onDownloadStart(WebView view, String url, String userAgent, String contentDisposition, String mimetype, long contentLength);
     }
 }

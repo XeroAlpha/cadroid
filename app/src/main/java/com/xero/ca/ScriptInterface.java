@@ -10,11 +10,13 @@ import android.view.KeyEvent;
 
 import com.xero.ca.script.AnalyticsPlatform;
 import com.xero.ca.script.RhinoFrameLayout;
-import com.xero.ca.script.RhinoWebSocketHelper;
+import com.xero.ca.script.RhinoWebSocketClientHelper;
+import com.xero.ca.script.RhinoWebSocketServerHelper;
 import com.xero.ca.script.RhinoWebView;
 import com.xero.ca.script.ScriptObject;
 
 import java.io.File;
+import java.net.URISyntaxException;
 
 @ScriptObject
 public class ScriptInterface {
@@ -123,7 +125,7 @@ public class ScriptInterface {
     }
 
     public void reportError(String techInfo) {
-        mContext.startActivity(BugReportActivity.createIntent(mContext, techInfo == null ? "" : techInfo, android.os.Process.myPid()));
+        mContext.getApplicationContext().startActivity(BugReportActivity.createIntent(mContext, techInfo == null ? "" : techInfo, android.os.Process.myPid()));
     }
 
     public void setLoadingTitle(String title) {
@@ -246,9 +248,17 @@ public class ScriptInterface {
         return mManager;
     }
 
-	public RhinoWebSocketHelper createWebSocketHelper(int port, RhinoWebSocketHelper.DelegateInterface delegate) {
-		return new RhinoWebSocketHelper(port, delegate);
+	public RhinoWebSocketServerHelper createWebSocketHelper(int port, RhinoWebSocketServerHelper.DelegateInterface delegate) {
+		return new RhinoWebSocketServerHelper(port, delegate);
 	}
+
+	public RhinoWebSocketClientHelper createWSClient(String uri, RhinoWebSocketClientHelper.DelegateInterface delegate) {
+        try {
+            return new RhinoWebSocketClientHelper(uri, delegate);
+        } catch (URISyntaxException e) {
+            throw new RuntimeException("Cannot create RhinoWebSocketClientHelper:" + e.getMessage(), e);
+        }
+    }
 
 	public Uri fileToUri(File file) {
 		return UnsafeFileProvider.getUriForFile(file);
