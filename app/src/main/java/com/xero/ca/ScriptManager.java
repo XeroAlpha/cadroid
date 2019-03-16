@@ -13,6 +13,7 @@ import org.mozilla.javascript.StackStyle;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
@@ -119,7 +120,13 @@ public class ScriptManager {
     }
 
     protected Reader getScriptReader() throws IOException {
-        if (debugFile != null) return new FileReader(debugFile);
+        if (debugFile != null) {
+            try {
+                return new FileReader(debugFile);
+            } catch (IOException e) {
+                Log.e("CA", "Loading debugFile failed", e);
+            }
+        }
         if (hotfix != null) {
             try {
                 return new InputStreamReader(hotfix.getInputStream());
