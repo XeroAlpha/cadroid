@@ -202,6 +202,7 @@ public class ScriptManager {
             if (callUnload) callScriptHook("unload", new Object[]{});
             scriptInterface.clearBridge();
             handler.getLooper().quit();
+            debugFile = null;
         }
     }
 

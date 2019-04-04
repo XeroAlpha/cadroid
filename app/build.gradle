@@ -8,9 +8,9 @@ android {
         applicationId "com.xero.ca"
         minSdkVersion 14
         targetSdkVersion 27
-        versionCode 17965
-        versionName "1.2.9"
-        buildConfigField "int", "SHELL_VERSION", "9"
+        versionCode 17990
+        versionName "1.2.10"
+        buildConfigField "int", "SHELL_VERSION", "10"
     }
     buildTypes {
         release {
