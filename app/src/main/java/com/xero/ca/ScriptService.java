@@ -42,7 +42,7 @@ public class ScriptService extends Service {
             stopSelf();
         } else {
             checkHotfix();
-            mManager.startScript(this);
+            mManager.prepareScript(this);
         }
 		return super.onStartCommand(intent, flags, startId);
 	}

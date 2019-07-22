@@ -4,21 +4,32 @@ import android.app.Activity;
 import android.content.res.Configuration;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
+import android.view.KeyEvent;
+import android.widget.FrameLayout;
 import android.widget.TextView;
 
 public class SplashActivity extends Activity {
+    private TextView mLoadingTitleView;
+    private FrameLayout mAdContainer;
+    private AdProvider mProvider;
+
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         setContentView(R.layout.main);
+        mLoadingTitleView = findViewById(R.id.loadingTitle);
+        mAdContainer = findViewById(R.id.adContainer);
         super.onCreate(savedInstanceState);
         if (!ScriptInterface.onSplashActivityCreate(this)) {
             finish();
         }
+        mProvider = AdProvider.getInstance();
+        mProvider.prepare(this, mAdContainer);
     }
 
     @Override
     protected void onDestroy() {
         ScriptInterface.onSplashActivityDestroy(this);
+        mProvider.dismiss();
         super.onDestroy();
     }
 
@@ -28,8 +39,23 @@ public class SplashActivity extends Activity {
     }
 
     @Override
-    public void onBackPressed() {
-        //do nothing
+    public boolean onKeyDown(int keyCode, KeyEvent event) {
+        if (keyCode == KeyEvent.KEYCODE_BACK || keyCode == KeyEvent.KEYCODE_HOME) {
+            return true;
+        }
+        return super.onKeyDown(keyCode, event);
+    }
+
+    @Override
+    protected void onPause() {
+        mProvider.pause();
+        super.onPause();
+    }
+
+    @Override
+    protected void onResume() {
+        mProvider.resume();
+        super.onResume();
     }
 
     public void setLoadingTitle(String title) {
@@ -45,11 +71,7 @@ public class SplashActivity extends Activity {
 
         @Override
         public void run() {
-            try {
-                ((TextView) findViewById(R.id.loadingTitle)).setText(title);
-            } catch (Exception e) {
-                //do nothing
-            }
+            mLoadingTitleView.setText(title);
         }
     }
 }

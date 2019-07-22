@@ -1,6 +1,5 @@
 package com.xero.ca.script;
 
-import android.app.Activity;
 import android.content.Context;
 
 import com.tendcloud.tenddata.TCAgent;

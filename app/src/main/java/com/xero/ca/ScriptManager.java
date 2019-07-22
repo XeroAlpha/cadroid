@@ -1,6 +1,5 @@
 package com.xero.ca;
 
-import android.os.Build;
 import android.os.Handler;
 import android.os.Looper;
 import android.util.Log;
@@ -8,12 +7,12 @@ import android.util.Log;
 import org.mozilla.javascript.Context;
 import org.mozilla.javascript.Function;
 import org.mozilla.javascript.RhinoException;
+import org.mozilla.javascript.Script;
 import org.mozilla.javascript.Scriptable;
 import org.mozilla.javascript.StackStyle;
 
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
@@ -36,6 +35,7 @@ public class ScriptManager {
     private String debugFile = null;
     private Hotfix hotfix = null;
     private boolean running = false;
+    private Script compiledScript = null;
 
     private ScriptManager() {}
 
@@ -64,12 +64,17 @@ public class ScriptManager {
         }
     }
 
-    public synchronized void startScript(android.content.Context ctx) {
+    public synchronized void prepareScript(android.content.Context ctx) {
         if (running) return;
         running = true;
         bindContext = ctx;
-        Thread th = new Thread(Thread.currentThread().getThreadGroup(), new StartCommand(), "CA_Loader", 262144);
+        Thread th = new Thread(Thread.currentThread().getThreadGroup(), new PrepareCommand(), "CA_Loader", 262144);
         th.start();
+    }
+
+    public synchronized void startScript() {
+        if (handler == null) return;
+        handler.post(new StartCommand());
     }
 
     public synchronized void endScript(boolean callUnload) {
@@ -167,26 +172,38 @@ public class ScriptManager {
         return null;
     }
 
-    class StartCommand implements Runnable {
+    class PrepareCommand implements Runnable {
         @Override
         public void run() {
             Looper.prepare();
             scriptInterface = initScriptInterface();
             cx = initContext();
             scope = initScope(cx);
+            handler = new Handler();
             try {
-                cx.evaluateReader(scope, getScriptReader(), "命令助手", 0, null);
+                compiledScript = cx.compileReader(getScriptReader(), "命令助手", 0, null);
+                //compiledScript = cx.compileString("android.util.Log.e(\"CA\", \"Run Complete\");", "Test", 0, null);
             } catch (Exception e) {
                 XApplication.reportError(bindContext.getApplicationContext(), Thread.currentThread(), new SecurityException("Fail to decode and execute the script.", e));
                 return;
             }
-            handler = new Handler();
+            Log.e("CA", "Compile Complete");
+            scriptInterface.onScriptReady();
             Looper.loop();
             Context.exit();
             cx = null;
             scope = null;
             handler = null;
             scriptInterface = null;
+        }
+    }
+
+    class StartCommand implements Runnable {
+        @Override
+        public void run() {
+            if (compiledScript != null) {
+                compiledScript.exec(cx, scope);
+            }
         }
     }
 

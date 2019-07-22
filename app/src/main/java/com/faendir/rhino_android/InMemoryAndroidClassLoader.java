@@ -23,7 +23,6 @@ import android.support.annotation.RequiresApi;
 
 import com.android.dex.Dex;
 
-import java.io.IOException;
 import java.nio.ByteBuffer;
 
 import dalvik.system.InMemoryDexClassLoader;

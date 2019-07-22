@@ -39,7 +39,8 @@ public class ScriptInterface {
 	private Preference mPreference;
     private Bridge mBridge;
     private CallbackProxy mCallbackProxy;
-    private boolean mIsForeground;
+    private boolean mIsForeground = false;
+    private boolean mOnlineMode = false;
 
 	public ScriptInterface(ScriptManager manager) {
 		mManager = manager;
@@ -103,7 +104,7 @@ public class ScriptInterface {
         ScriptInterface instance = getInstance();
         if (instance != null) {
             Bridge bridge = instance.mBridge;
-            if (bridge != null) bridge.onBeginPermissonRequest(activity);
+            if (bridge != null) bridge.onBeginPermissionRequest(activity);
         }
     }
 
@@ -304,7 +305,15 @@ public class ScriptInterface {
 	    return AnalyticsPlatform.getInstance();
     }
 
-	public static ScriptInterface getInstance() {
+    public boolean isOnlineMode() {
+        return mOnlineMode;
+    }
+
+    public void onScriptReady() {
+	    AdProvider.getInstance().runAfterComplete(mCallbackProxy);
+    }
+
+    public static ScriptInterface getInstance() {
 	    return ScriptManager.hasInstance() ? ScriptManager.getInstance().getScriptInterface() : null;
     }
 
@@ -317,7 +326,7 @@ public class ScriptInterface {
 
 		void onActivityResult(int requestCode, int resultCode, Intent data);
 
-		void onBeginPermissonRequest(PermissionRequestActivity activity);
+		void onBeginPermissionRequest(PermissionRequestActivity activity);
 
 		void onNewIntent(Intent intent);
 
@@ -330,7 +339,7 @@ public class ScriptInterface {
 		void onRemoteDisabled();
 	}
 
-	class CallbackProxy implements AccessibilitySvc.ServiceLifeCycleListener, GameBridgeService.Callback {
+	class CallbackProxy implements AccessibilitySvc.ServiceLifeCycleListener, GameBridgeService.Callback, AdProvider.OnCompleteListener {
         @Override
         public void onCreate() {
             if (mBridge != null) mBridge.onAccessibilitySvcCreate();
@@ -354,6 +363,13 @@ public class ScriptInterface {
         @Override
         public void onRemoteDisabled() {
             if (mBridge != null) mBridge.onRemoteDisabled();
+        }
+
+        @Override
+        public void onComplete(boolean success) {
+            if (mOnlineMode) return;
+            mOnlineMode = success;
+            mManager.startScript();
         }
     }
 }
