@@ -19,6 +19,7 @@ import java.io.File;
 import java.net.URISyntaxException;
 
 @ScriptObject
+@SuppressWarnings({"WeakerAccess", "unused"})
 public class ScriptInterface {
     public static final String ACTION_ADD_LIBRARY = "com.xero.ca.ADD_LIBRARY";
     public static final String ACTION_EDIT_COMMAND = "com.xero.ca.EDIT_COMMAND";
@@ -60,10 +61,16 @@ public class ScriptInterface {
         if (instance != null) {
             if (instance.mBridge != null) instance.mBridge.onNewIntent(intent);
         } else {
-            ctx.startService(intent.setClass(ctx, ScriptService.class));
-            if (!isSubAction(intent.getAction()) && !Preference.getInstance(ctx).getHideSplash()) {
+            boolean showSplash = !isSubAction(intent.getAction()) && !Preference.getInstance(ctx).getHideSplash();
+            Intent serviceIntent = new Intent(ctx, ScriptService.class);
+            serviceIntent.putExtra(Intent.EXTRA_INTENT, intent);
+            if (showSplash) {
+                serviceIntent.setAction(ScriptService.ACTION_PREPARE);
                 ctx.startActivity(new Intent(ctx, SplashActivity.class).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK));
+            } else {
+                serviceIntent.setAction(ScriptService.ACTION_RUN);
             }
+            ctx.startService(serviceIntent);
         }
     }
 

@@ -4,13 +4,18 @@ android {
     compileSdkVersion 29
     buildToolsVersion '29.0.1'
 
+    compileOptions {
+        sourceCompatibility 1.8
+        targetCompatibility 1.8
+    }
+
     defaultConfig {
         applicationId "com.xero.ca"
         minSdkVersion 14
         targetSdkVersion 29
-        versionCode 18098
+        versionCode 18104
         versionName "1.2.12"
-        buildConfigField "int", "SHELL_VERSION", "14"
+        buildConfigField "int", "SHELL_VERSION", "17"
     }
     buildTypes {
         release {
@@ -24,7 +29,7 @@ dependencies {
     implementation files('libs/SaaS_AppAnalytics_Android_SDK_V4.0.29.jar')
     implementation files('libs/GDTSDK.union.4.63.933.jar')
     implementation 'com.android.support:support-annotations:28.0.0'
-    implementation 'org.mozilla:rhino:1.7.10'
+    implementation 'org.mozilla:rhino:1.7.11'
     implementation 'net.lingala.zip4j:zip4j:1.3.2'
     implementation 'com.jakewharton.android.repackaged:dalvik-dx:9.0.0_r3'
     implementation 'org.java-websocket:Java-WebSocket:1.3.9'

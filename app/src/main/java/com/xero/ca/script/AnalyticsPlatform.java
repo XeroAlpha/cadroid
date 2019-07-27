@@ -1,14 +1,16 @@
 package com.xero.ca.script;
 
+import android.app.Activity;
 import android.content.Context;
 
 import com.tendcloud.tenddata.TCAgent;
 
+import java.util.HashMap;
 import java.util.Map;
 
 @ScriptObject
 public class AnalyticsPlatform {
-    private static AnalyticsPlatform sInstance = new AnalyticsPlatform();
+    private static final AnalyticsPlatform sInstance = new AnalyticsPlatform();
 
     public static AnalyticsPlatform getInstance() {
         return sInstance;
@@ -40,5 +42,11 @@ public class AnalyticsPlatform {
 
     public void removeGlobalKV(String key) {
         TCAgent.removeGlobalKV(key);
+    }
+
+    public static void reportAdError(Activity activity, int errorCode, String errorMessage) {
+        Map<String, Object> kv = new HashMap<>();
+        kv.put("error", errorCode + " " + errorMessage);
+        TCAgent.onEvent(activity, "AD_ERROR", "", kv);
     }
 }

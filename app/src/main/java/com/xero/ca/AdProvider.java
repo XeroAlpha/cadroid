@@ -2,14 +2,16 @@ package com.xero.ca;
 
 import android.app.Activity;
 import android.view.ViewGroup;
-import android.widget.Toast;
 
 import com.qq.e.ads.splash.SplashAD;
 import com.qq.e.ads.splash.SplashADListener;
 import com.qq.e.comm.util.AdError;
+import com.xero.ca.script.AnalyticsPlatform;
+
+import java.lang.ref.WeakReference;
 
 public class AdProvider implements SplashADListener {
-    private static AdProvider sInstance = new AdProvider();
+    private static final AdProvider sInstance = new AdProvider();
 
     public static AdProvider getInstance() {
         return sInstance;
@@ -19,15 +21,18 @@ public class AdProvider implements SplashADListener {
     private boolean mCompleted;
     private boolean mPaused;
     private boolean mDispatchWhenResume;
-    private Activity mActivity;
+    private WeakReference<Activity> mActivity;
     private OnCompleteListener mListener;
 
     public void prepare(Activity activity, ViewGroup container) {
-        mActivity = activity;
-        mCompleted = false;
-        mPaid = false;
+        mActivity = new WeakReference<>(activity);
         mPaused = false;
         mDispatchWhenResume = false;
+        synchronized (this) {
+            mListener = null;
+            mCompleted = false;
+            mPaid = false;
+        }
         SplashAD ad = new SplashAD(activity, Secret.getGDTAppID(), Secret.getGDTPosID(), this);
         ad.fetchAndShowIn(container);
     }
@@ -44,9 +49,11 @@ public class AdProvider implements SplashADListener {
 
     private void dispatchComplete(boolean success) {
         synchronized (this) {
-            mCompleted = true;
-            mPaid = success;
-            if (mListener != null) mListener.onComplete(success);
+            if (!mCompleted) {
+                mCompleted = true;
+                mPaid = success;
+                if (mListener != null) mListener.onComplete(success);
+            }
         }
     }
 
@@ -62,8 +69,10 @@ public class AdProvider implements SplashADListener {
         }
     }
 
-    public void dismiss() {
+    public void release() {
         mActivity = null;
+        dispatchComplete(false);
+        mListener = null;
     }
 
     @Override
@@ -77,7 +86,12 @@ public class AdProvider implements SplashADListener {
 
     @Override
     public void onNoAD(AdError adError) {
-        Toast.makeText(mActivity, adError.getErrorMsg(), Toast.LENGTH_LONG).show();
+        if (mActivity != null) { // GDT似乎有时会在Activity被destroy后调用此方法
+            Activity activity = mActivity.get();
+            if (activity != null) {
+                AnalyticsPlatform.reportAdError(activity, adError.getErrorCode(), adError.getErrorMsg());
+            }
+        }
         dispatchComplete(adError.getErrorCode() >= 100000);
     }
 

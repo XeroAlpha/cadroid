@@ -35,6 +35,7 @@ public class ScriptManager {
     private String debugFile = null;
     private Hotfix hotfix = null;
     private boolean running = false;
+    private String sourceName;
     private Script compiledScript = null;
 
     private ScriptManager() {}
@@ -64,11 +65,12 @@ public class ScriptManager {
         }
     }
 
-    public synchronized void prepareScript(android.content.Context ctx) {
+    public synchronized void prepareScript(android.content.Context ctx, String srcName, boolean runAfterPrepared) {
         if (running) return;
         running = true;
         bindContext = ctx;
-        Thread th = new Thread(Thread.currentThread().getThreadGroup(), new PrepareCommand(), "CA_Loader", 262144);
+        sourceName = srcName;
+        Thread th = new Thread(Thread.currentThread().getThreadGroup(), new PrepareCommand(runAfterPrepared), "Script_Loader", 262144);
         th.start();
     }
 
@@ -111,6 +113,7 @@ public class ScriptManager {
         //Context context = Context.enter();
         Context context = new com.faendir.rhino_android.RhinoAndroidHelper().enterContext();
         context.setOptimizationLevel(-1);
+        context.setLanguageVersion(Context.VERSION_ES6);
         return context;
     }
 
@@ -129,14 +132,14 @@ public class ScriptManager {
             try {
                 return new FileReader(debugFile);
             } catch (IOException e) {
-                Log.e("CA", "Loading debugFile failed", e);
+                Log.e("Script", "Loading debugFile failed", e);
             }
         }
         if (hotfix != null) {
             try {
                 return new InputStreamReader(hotfix.getInputStream());
             } catch (IOException e) {
-                Log.e("CA", "Loading hotfix failed", e);
+                Log.e("Script", "Loading hotfix failed", e);
             }
         }
         return new InputStreamReader(ScriptFileStream.fromAsset(bindContext, "script.js"));
@@ -173,6 +176,12 @@ public class ScriptManager {
     }
 
     class PrepareCommand implements Runnable {
+        private boolean runAfterPrepared;
+
+        public PrepareCommand(boolean runAfterPrepared) {
+            this.runAfterPrepared = runAfterPrepared;
+        }
+
         @Override
         public void run() {
             Looper.prepare();
@@ -181,14 +190,16 @@ public class ScriptManager {
             scope = initScope(cx);
             handler = new Handler();
             try {
-                compiledScript = cx.compileReader(getScriptReader(), "命令助手", 0, null);
-                //compiledScript = cx.compileString("android.util.Log.e(\"CA\", \"Run Complete\");", "Test", 0, null);
+                compiledScript = cx.compileReader(getScriptReader(), sourceName, 0, null);
             } catch (Exception e) {
                 XApplication.reportError(bindContext.getApplicationContext(), Thread.currentThread(), new SecurityException("Fail to decode and execute the script.", e));
                 return;
             }
-            Log.e("CA", "Compile Complete");
-            scriptInterface.onScriptReady();
+            if (runAfterPrepared) {
+                startScript();
+            } else {
+                scriptInterface.onScriptReady();
+            }
             Looper.loop();
             Context.exit();
             cx = null;
@@ -203,6 +214,7 @@ public class ScriptManager {
         public void run() {
             if (compiledScript != null) {
                 compiledScript.exec(cx, scope);
+                compiledScript = null;
             }
         }
     }

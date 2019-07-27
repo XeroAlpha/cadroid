@@ -18,12 +18,14 @@ public class ScriptService extends Service {
     private static WeakReference<ScriptService> sInstance = null;
     private static final String DEFAULT_CHANNEL = "default";
 
+    public static String ACTION_PREPARE = "com.xero.ca.script.ACTION_PREPARE";
+    public static String ACTION_RUN = "com.xero.ca.script.ACTION_RUN";
+
     private ScriptManager mManager;
     private Intent mLastIntent;
 
     @Override
 	public int onStartCommand(Intent intent, int flags, int startId) {
-        mLastIntent = intent;
         if (sInstance != null) {
             return super.onStartCommand(intent, flags, startId);
         }
@@ -32,8 +34,16 @@ public class ScriptService extends Service {
             stopSelf();
             return super.onStartCommand(null, flags, startId);
         }
+
+        Intent realIntent = intent.getParcelableExtra(Intent.EXTRA_INTENT);
+        if (realIntent == null) {
+            stopSelf();
+            return super.onStartCommand(intent, flags, startId);
+        }
+        mLastIntent = realIntent;
+        String sourceName = getString(R.string.app_name);
         String src = Preference.getInstance(this).getDebugSource();
-        if (ScriptInterface.ACTION_DEBUG_EXEC.equals(intent.getAction()) && !TextUtils.isEmpty(src)) {
+        if (ScriptInterface.ACTION_DEBUG_EXEC.equals(realIntent.getAction()) && !TextUtils.isEmpty(src)) {
             mManager = ScriptManager.createDebuggable(src);
         } else {
             mManager = ScriptManager.getInstance();
@@ -42,7 +52,11 @@ public class ScriptService extends Service {
             stopSelf();
         } else {
             checkHotfix();
-            mManager.prepareScript(this);
+            if (ACTION_PREPARE.equals(intent.getAction())) {
+                mManager.prepareScript(this, sourceName, false);
+            } else if (ACTION_RUN.equals(intent.getAction())) {
+                mManager.prepareScript(this, sourceName, true);
+            }
         }
 		return super.onStartCommand(intent, flags, startId);
 	}
@@ -97,6 +111,7 @@ public class ScriptService extends Service {
         stopForeground(true);
     }
 
+    @SuppressWarnings("deprecation")
     private Notification.Builder createNotificationBuilder() {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             NotificationChannel channel = new NotificationChannel(DEFAULT_CHANNEL, "保持活跃", NotificationManager.IMPORTANCE_DEFAULT);
