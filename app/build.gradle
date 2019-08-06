@@ -15,7 +15,7 @@ android {
         targetSdkVersion 29
         versionCode 18107
         versionName "1.2.12"
-        buildConfigField "int", "SHELL_VERSION", "18"
+        buildConfigField "int", "SHELL_VERSION", "19"
     }
     buildTypes {
         release {

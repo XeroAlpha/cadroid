@@ -9,6 +9,7 @@ public class Preference {
     public static final String SETTING_HIDE_SPLASH = "hideSplash";
     public static final String SETTING_HIDE_NOTIFICATION = "hideNotification";
     public static final String SETTING_START_ON_BOOT = "bootStart";
+    public static final String SETTING_FIRST_RUN = "firstRun";
     public static final String PREFERENCE_NAME = "user_settings";
 
     private static Preference sInstance = null;
@@ -57,5 +58,13 @@ public class Preference {
 
     public String getDebugSource() {
         return mPreferences.getString("debugSource", "");
+    }
+
+    public boolean checkFirstRun() {
+        boolean result = !mPreferences.contains(SETTING_FIRST_RUN);
+        if (result) {
+            mPreferences.edit().putBoolean(SETTING_FIRST_RUN, false).apply();
+        }
+        return result;
     }
 }

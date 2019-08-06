@@ -1,6 +1,10 @@
 package com.xero.ca;
 
+import android.Manifest;
 import android.app.Activity;
+import android.content.Context;
+import android.content.pm.PackageManager;
+import android.os.Build;
 import android.view.ViewGroup;
 
 import com.qq.e.ads.splash.SplashAD;
@@ -34,8 +38,13 @@ public class AdProvider implements SplashADListener {
             mCompleted = false;
             mPaid = false;
         }
-        SplashAD ad = new SplashAD(activity, Secret.getGDTAppID(), Secret.getGDTPosID(), this);
-        ad.fetchAndShowIn(container);
+        Preference pref = Preference.getInstance(activity);
+        if (pref.checkFirstRun()) {
+            onADDismissed();
+        } else {
+            SplashAD ad = new SplashAD(activity, Secret.getGDTAppID(), Secret.getGDTPosID(), this);
+            ad.fetchAndShowIn(container);
+        }
     }
 
     public void runAfterComplete(OnCompleteListener listener) {
