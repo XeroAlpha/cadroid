@@ -42,6 +42,7 @@ public class ScriptInterface {
     private CallbackProxy mCallbackProxy;
     private boolean mIsForeground = false;
     private boolean mOnlineMode = false;
+    private String mOfflineReason = null;
 
 	public ScriptInterface(ScriptManager manager) {
 		mManager = manager;
@@ -316,6 +317,10 @@ public class ScriptInterface {
         return mOnlineMode;
     }
 
+    public String getOfflineReason() {
+        return mOfflineReason;
+    }
+
     public void onScriptReady() {
 	    AdProvider.getInstance().runAfterComplete(mCallbackProxy);
     }
@@ -373,9 +378,10 @@ public class ScriptInterface {
         }
 
         @Override
-        public void onComplete(boolean success) {
+        public void onComplete(boolean success, String message) {
             if (mOnlineMode) return;
             mOnlineMode = success;
+            mOfflineReason = message;
             mManager.startScript();
         }
     }

@@ -21,6 +21,7 @@ public class AdProvider implements SplashADListener {
     private boolean mCompleted;
     private boolean mPaused;
     private boolean mDispatchWhenResume;
+    private String mMessage;
     private WeakReference<Activity> mActivity;
     private OnCompleteListener mListener;
 
@@ -40,19 +41,20 @@ public class AdProvider implements SplashADListener {
     public void runAfterComplete(OnCompleteListener listener) {
         synchronized (this) {
             if (mCompleted) {
-                listener.onComplete(mPaid);
+                listener.onComplete(mPaid, mMessage);
             } else {
                 mListener = listener;
             }
         }
     }
 
-    private void dispatchComplete(boolean success) {
+    private void dispatchComplete(boolean success, String message) {
         synchronized (this) {
             if (!mCompleted) {
                 mCompleted = true;
                 mPaid = success;
-                if (mListener != null) mListener.onComplete(success);
+                mMessage = message;
+                if (mListener != null) mListener.onComplete(success, message);
             }
         }
     }
@@ -65,13 +67,13 @@ public class AdProvider implements SplashADListener {
         mPaused = false;
         if (mDispatchWhenResume) {
             mDispatchWhenResume = false;
-            dispatchComplete(true);
+            dispatchComplete(true, null);
         }
     }
 
     public void release() {
         mActivity = null;
-        dispatchComplete(false);
+        dispatchComplete(false, null);
         mListener = null;
     }
 
@@ -80,7 +82,7 @@ public class AdProvider implements SplashADListener {
         if (mPaused) {
             mDispatchWhenResume = true;
         } else {
-            dispatchComplete(true);
+            dispatchComplete(true, null);
         }
     }
 
@@ -92,7 +94,7 @@ public class AdProvider implements SplashADListener {
                 AnalyticsPlatform.reportAdError(activity, adError.getErrorCode(), adError.getErrorMsg());
             }
         }
-        dispatchComplete(adError.getErrorCode() >= 100000);
+        dispatchComplete(adError.getErrorCode() >= 6000, adError.getErrorMsg());
     }
 
     @Override
@@ -108,6 +110,6 @@ public class AdProvider implements SplashADListener {
     public void onADExposure() {}
 
     interface OnCompleteListener {
-        void onComplete(boolean success);
+        void onComplete(boolean success, String message);
     }
 }
