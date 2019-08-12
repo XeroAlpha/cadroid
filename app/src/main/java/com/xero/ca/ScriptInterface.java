@@ -26,9 +26,9 @@ public class ScriptInterface {
     public static final String ACTION_START_ON_BOOT = "com.xero.ca.START_ON_BOOT";
     public static final String ACTION_START_FROM_BACKGROUND = "com.xero.ca.ACTION_START_FROM_BACKGROUND";
     public static final String ACTION_START_FROM_SHORTCUT = "com.xero.ca.ACTION_START_FROM_SHORTCUT";
+    public static final String ACTION_START_FROM_QS_TILE = "com.xero.ca.ACTION_START_FROM_QS_TILE";
     public static final String ACTION_SCRIPT_ACTION = "com.xero.ca.ACTION_SCRIPT_ACTION";
     public static final String ACTION_URI_ACTION = "com.xero.ca.ACTION_URI_ACTION";
-    public static final String ACTION_SHOW_DEBUG = "com.xero.ca.SHOW_DEBUG";
     public static final String ACTION_DEBUG_EXEC = "com.xero.ca.DEBUG_EXEC";
 
     private ScriptManager mManager;
@@ -80,6 +80,7 @@ public class ScriptInterface {
         return action.equals(ACTION_ADD_LIBRARY) ||
                 action.equals(ACTION_START_ON_BOOT) ||
                 action.equals(ACTION_START_FROM_BACKGROUND) ||
+                action.equals(ACTION_START_FROM_QS_TILE) ||
                 action.equals(ACTION_SCRIPT_ACTION) ||
                 action.equals(ACTION_URI_ACTION);
     }
@@ -155,12 +156,18 @@ public class ScriptInterface {
         mBridge = bridge;
         GameBridgeService.setCallback(mCallbackProxy);
         AccessibilitySvc.setLifeCycleListener(mCallbackProxy);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+            ScriptTileService.setTileListener(mCallbackProxy);
+        }
     }
 
     public void clearBridge() {
         mBridge = null;
         GameBridgeService.removeCallback();
         AccessibilitySvc.setLifeCycleListener(null);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+            ScriptTileService.setTileListener(null);
+        }
     }
 
     public Context getContext() {
@@ -325,6 +332,13 @@ public class ScriptInterface {
 	    AdProvider.getInstance().runAfterComplete(mCallbackProxy);
     }
 
+    public void notifyTileUpdate() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+            ScriptTileService service = ScriptTileService.getInstance();
+            if (service != null) service.notifyUpdate();
+        }
+    }
+
     public static ScriptInterface getInstance() {
 	    return ScriptManager.hasInstance() ? ScriptManager.getInstance().getScriptInterface() : null;
     }
@@ -349,9 +363,13 @@ public class ScriptInterface {
 		void onRemoteMessage(Message msg);
 
 		void onRemoteDisabled();
+
+		void onTileReady(ScriptTileService.TileConfig config);
+
+		void onTileClick(ScriptTileService.TileConfig config);
 	}
 
-	class CallbackProxy implements AccessibilitySvc.ServiceLifeCycleListener, GameBridgeService.Callback, AdProvider.OnCompleteListener {
+	class CallbackProxy implements AccessibilitySvc.ServiceLifeCycleListener, GameBridgeService.Callback, AdProvider.OnCompleteListener, ScriptTileService.TileListener {
         @Override
         public void onCreate() {
             if (mBridge != null) mBridge.onAccessibilitySvcCreate();
@@ -383,6 +401,16 @@ public class ScriptInterface {
             mOnlineMode = success;
             mOfflineReason = message;
             mManager.startScript();
+        }
+
+        @Override
+        public void onReady(ScriptTileService.TileConfig config) {
+            if (mBridge != null) mBridge.onTileReady(config);
+        }
+
+        @Override
+        public void onClick(ScriptTileService.TileConfig config) {
+            if (mBridge != null) mBridge.onTileClick(config);
         }
     }
 }

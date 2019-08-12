@@ -13,9 +13,9 @@ android {
         applicationId "com.xero.ca"
         minSdkVersion 14
         targetSdkVersion 29
-        versionCode 18107
+        versionCode 18120
         versionName "1.2.12"
-        buildConfigField "int", "SHELL_VERSION", "19"
+        buildConfigField "int", "SHELL_VERSION", "20"
     }
     buildTypes {
         release {

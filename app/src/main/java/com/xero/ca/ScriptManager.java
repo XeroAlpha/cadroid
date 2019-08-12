@@ -10,6 +10,7 @@ import org.mozilla.javascript.RhinoException;
 import org.mozilla.javascript.Script;
 import org.mozilla.javascript.Scriptable;
 import org.mozilla.javascript.StackStyle;
+import org.mozilla.javascript.WrapFactory;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -118,8 +119,9 @@ public class ScriptManager {
     }
 
     protected Scriptable initScope(Context cx) {
+        WrapFactory wrapFactory = cx.getWrapFactory();
         Scriptable s = cx.initStandardObjects();
-        s.put("ScriptInterface", s, getScriptInterface());
+        s.put("ScriptInterface", s, wrapFactory.wrapAsJavaObject(cx, s, getScriptInterface(), ScriptInterface.class));
         return s;
     }
 
