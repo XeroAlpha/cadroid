@@ -68,6 +68,12 @@ public class AdProvider implements SplashADListener {
         }
     }
 
+    public boolean isCompleted() {
+        synchronized (this) {
+            return mCompleted;
+        }
+    }
+
     public void pause() {
         mPaused = true;
     }

@@ -117,6 +117,14 @@ public class ScriptInterface {
         }
     }
 
+    public static void onBeginForegroundTask(ForegroundTaskActivity activity, Intent intent) {
+        ScriptInterface instance = getInstance();
+        if (instance != null) {
+            Bridge bridge = instance.mBridge;
+            if (bridge != null) bridge.onBeginForegroundTask(activity, intent);
+        }
+    }
+
     public static boolean applyIntent(Intent intent) {
         ScriptInterface instance = getInstance();
         if (instance != null) {
@@ -209,7 +217,7 @@ public class ScriptInterface {
         return mContext.checkPermission(permission, android.os.Process.myPid(), android.os.Process.myUid());
     }
 
-    public void beginPermissonRequest() {
+    public void beginPermissionRequest() {
         mContext.startActivity(new Intent(mContext, PermissionRequestActivity.class).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK));
     }
 
@@ -339,6 +347,10 @@ public class ScriptInterface {
         }
     }
 
+    public void beginForegroundTask(Intent intent) {
+	    mContext.startActivity(intent.setClass(mContext, ForegroundTaskActivity.class).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK));
+    }
+
     public static ScriptInterface getInstance() {
 	    return ScriptManager.hasInstance() ? ScriptManager.getInstance().getScriptInterface() : null;
     }
@@ -367,6 +379,8 @@ public class ScriptInterface {
 		void onTileReady(ScriptTileService.TileConfig config);
 
 		void onTileClick(ScriptTileService.TileConfig config);
+
+		void onBeginForegroundTask(ForegroundTaskActivity activity, Intent intent);
 	}
 
 	class CallbackProxy implements AccessibilitySvc.ServiceLifeCycleListener, GameBridgeService.Callback, AdProvider.OnCompleteListener, ScriptTileService.TileListener {

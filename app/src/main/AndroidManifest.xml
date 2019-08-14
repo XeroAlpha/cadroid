@@ -80,8 +80,16 @@
             </intent-filter>
         </activity>
         <activity android:name=".PermissionRequestActivity"
+            android:excludeFromRecents="true"
             android:configChanges="orientation|screenSize|smallestScreenSize|keyboard|keyboardHidden|screenLayout" />
         <activity android:name=".ReturnDataActivity"
+            android:taskAffinity="com.xero.ca.ReturnDataTask"
+            android:autoRemoveFromRecents="true"
+            android:configChanges="orientation|screenSize|smallestScreenSize|keyboard|keyboardHidden|screenLayout"
+            android:theme="@style/AppTheme.Translucent" />
+        <activity android:name=".ForegroundTaskActivity"
+            android:taskAffinity="com.xero.ca.ForegroundTask"
+            android:autoRemoveFromRecents="true"
             android:configChanges="orientation|screenSize|smallestScreenSize|keyboard|keyboardHidden|screenLayout"
             android:theme="@style/AppTheme.Translucent" />
         <activity android:name=".SplashActivity"
