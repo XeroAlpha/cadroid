@@ -18,8 +18,8 @@ public class ScriptService extends Service {
     private static WeakReference<ScriptService> sInstance = null;
     private static final String DEFAULT_CHANNEL = "default";
 
-    public static String ACTION_PREPARE = "com.xero.ca.script.ACTION_PREPARE";
-    public static String ACTION_RUN = "com.xero.ca.script.ACTION_RUN";
+    public static final String ACTION_PREPARE = "com.xero.ca.script.ACTION_PREPARE";
+    public static final String ACTION_RUN = "com.xero.ca.script.ACTION_RUN";
 
     private ScriptManager mManager;
     private Intent mLastIntent;
@@ -51,6 +51,7 @@ public class ScriptService extends Service {
         if (mManager == null || mManager.isRunning()) {
             stopSelf();
         } else {
+            mManager.setCacheDir(getCacheDir().getPath());
             checkHotfix();
             if (ACTION_PREPARE.equals(intent.getAction())) {
                 mManager.prepareScript(this, sourceName, false);

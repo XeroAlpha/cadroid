@@ -15,7 +15,10 @@ import com.xero.ca.script.RhinoWebSocketServerHelper;
 import com.xero.ca.script.RhinoWebView;
 import com.xero.ca.script.ScriptObject;
 
+import org.mozilla.javascript.Scriptable;
+
 import java.io.File;
+import java.io.IOException;
 import java.net.URISyntaxException;
 
 @ScriptObject
@@ -349,6 +352,22 @@ public class ScriptInterface {
 
     public void beginForegroundTask(Intent intent) {
 	    mContext.startActivity(intent.setClass(mContext, ForegroundTaskActivity.class).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK));
+    }
+
+    public Object executeScriptCache(String cacheFile, byte[] hash, Scriptable scope) throws IOException, ClassNotFoundException {
+        return mManager.executeScriptCache(cacheFile, hash, scope);
+    }
+
+    public void writeScriptCache(String source, String sourceName, String cacheFile, byte[] hash) throws IOException {
+        mManager.writeScriptCache(source, sourceName, cacheFile, hash);
+    }
+
+    public Object executeICode(byte[] iCode, byte[] hash, Scriptable scope) throws IOException, ClassNotFoundException {
+	    return mManager.executeICode(iCode, hash, scope);
+    }
+
+    public byte[] compileICode(String source, String sourceName, byte[] hash) throws IOException {
+	    return mManager.compileICode(source, sourceName, hash);
     }
 
     public static ScriptInterface getInstance() {

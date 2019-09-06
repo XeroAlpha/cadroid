@@ -7,7 +7,10 @@ import android.os.Handler;
 import android.os.SystemClock;
 import android.service.quicksettings.Tile;
 import android.service.quicksettings.TileService;
+import android.support.annotation.NonNull;
 import android.util.Log;
+
+import com.xero.ca.script.ScriptObject;
 
 import java.lang.ref.WeakReference;
 
@@ -75,7 +78,7 @@ public class ScriptTileService extends TileService {
         }
     }
 
-    void postCommand(int type) {
+    private void postCommand(int type) {
         Log.d("CA","Post Command:" + type + " sPending=" + sPending);
         if (mHandler != null && !sPending) {
             sPending = true;
@@ -83,7 +86,8 @@ public class ScriptTileService extends TileService {
         }
     }
 
-    public class TileConfig {
+    @ScriptObject
+    public static class TileConfig {
         public static final int STATE_ACTIVE = Tile.STATE_ACTIVE;
         public static final int STATE_INACTIVE = Tile.STATE_INACTIVE;
         public static final int STATE_UNAVAILABLE = Tile.STATE_UNAVAILABLE;
@@ -92,6 +96,7 @@ public class ScriptTileService extends TileService {
         public CharSequence subtitle;
         public int state;
 
+        @NonNull
         @Override
         public String toString() {
             return "[TileConfig@" + Integer.toHexString(hashCode()) + " label=" + label + ",subtitle=" + subtitle + ",state=" + state + "]";
@@ -105,7 +110,7 @@ public class ScriptTileService extends TileService {
         private int mType;
         private TileConfig mConfig;
 
-        public UpdateTileCommand(int type) {
+        UpdateTileCommand(int type) {
             mType = type;
             mConfig = createTileConfig();
         }
@@ -162,7 +167,7 @@ public class ScriptTileService extends TileService {
         }
     }
 
-    void updateTileDefault(TileConfig config) {
+    private void updateTileDefault(TileConfig config) {
         config.label = getText(R.string.app_name);
         if (sPendingLaunch && SystemClock.uptimeMillis() - sLastLaunch < 30000) {
             config.state = Tile.STATE_UNAVAILABLE;

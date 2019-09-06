@@ -16,19 +16,14 @@ public class PermissionRequestActivity extends Activity {
     protected void onCreate(Bundle savedInstanceState) {
         ScriptInterface.onBeginPermissionRequest(this);
         if (mCallback == null) {
-            new Handler().post(new Runnable() {
-                @Override
-                public void run() {
-                    finish();
-                }
-            });
+            new Handler().post(this::finish);
         }
         super.onCreate(savedInstanceState);
     }
 
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-        mCallback.onRequestPermissionsResult(this, requestCode, permissions, grantResults);
+        if (mCallback != null) mCallback.onRequestPermissionsResult(this, requestCode, permissions, grantResults);
     }
 
     @Override
@@ -57,19 +52,16 @@ public class PermissionRequestActivity extends Activity {
             requestPermissions(permissions, requestCode);
         } else {
             Handler handler = new Handler(getMainLooper());
-            handler.post(new Runnable() {
-                @Override
-                public void run() {
-                    final int[] grantResults = new int[permissions.length];
-                    PackageManager packageManager = getPackageManager();
-                    String packageName = getPackageName();
-                    final int permissionCount = permissions.length;
-                    for (int i = 0; i < permissionCount; i++) {
-                        grantResults[i] = packageManager.checkPermission(
-                                permissions[i], packageName);
-                    }
-                    onRequestPermissionsResult(requestCode, permissions, grantResults);
+            handler.post(() -> {
+                final int[] grantResults = new int[permissions.length];
+                PackageManager packageManager = getPackageManager();
+                String packageName = getPackageName();
+                final int permissionCount = permissions.length;
+                for (int i = 0; i < permissionCount; i++) {
+                    grantResults[i] = packageManager.checkPermission(
+                            permissions[i], packageName);
                 }
+                onRequestPermissionsResult(requestCode, permissions, grantResults);
             });
         }
     }

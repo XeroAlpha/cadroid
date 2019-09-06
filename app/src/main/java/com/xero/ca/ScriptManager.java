@@ -2,10 +2,12 @@ package com.xero.ca;
 
 import android.os.Handler;
 import android.os.Looper;
+import android.os.SystemClock;
 import android.util.Log;
 
 import org.mozilla.javascript.Context;
 import org.mozilla.javascript.Function;
+import org.mozilla.javascript.Kit;
 import org.mozilla.javascript.RhinoException;
 import org.mozilla.javascript.Script;
 import org.mozilla.javascript.Scriptable;
@@ -34,6 +36,7 @@ public class ScriptManager {
     private android.content.Context bindContext = null;
     private ScriptInterface scriptInterface = null;
     private String debugFile = null;
+    private String cacheDir = null;
     private Hotfix hotfix = null;
     private boolean running = false;
     private String sourceName;
@@ -110,6 +113,10 @@ public class ScriptManager {
         hotfix = new Hotfix(coreFile, signFile, verify, versionCode);
     }
 
+    public void setCacheDir(String cacheDir) {
+        this.cacheDir = cacheDir;
+    }
+
     protected synchronized Context initContext() {
         //Context context = Context.enter();
         Context context = new com.faendir.rhino_android.RhinoAndroidHelper().enterContext();
@@ -177,10 +184,61 @@ public class ScriptManager {
         return null;
     }
 
+    protected Script getCompiledScript() throws IOException {
+        String source;
+        try (Reader reader = getScriptReader()) {
+            source = Kit.readReader(reader);
+        }
+        if (cacheDir != null && debugFile != null) {
+            return cachedCompileScript(source, sourceName, new File(cacheDir, "script.obj"));
+        } else {
+            return cx.compileString(source, sourceName, 0, null);
+        }
+    }
+
+    protected Script cachedCompileScript(String source, String sourceName, File cacheFile) {
+        byte[] hash = ScriptFileStream.getStringHash(source);
+        Script script;
+        if (cacheFile.exists()) {
+            try {
+                return (Script) ScriptFileStream.readScript(cacheFile.getPath(), hash);
+            } catch (Exception e) {
+                Log.e("Script", "Loading cacheScript failed", e);
+            }
+        }
+        script = cx.compileString(source, sourceName, 0, null);
+        try {
+            ScriptFileStream.writeScript(cacheFile.getPath(), hash, script);
+        } catch (IOException e) {
+            Log.e("Script", "Write cacheScript failed", e);
+        }
+        return script;
+    }
+
+    public Object executeScriptCache(String cacheFile, byte[] hash, Scriptable scope) throws IOException, ClassNotFoundException {
+        Script script = (Script) ScriptFileStream.readScript(cacheFile, hash);
+        return script.exec(cx, scope);
+    }
+
+    public void writeScriptCache(String source, String sourceName, String cacheFile, byte[] hash) throws IOException {
+        Script script = cx.compileString(source, sourceName, 0, null);
+        ScriptFileStream.writeScript(cacheFile, hash, script);
+    }
+
+    public Object executeICode(byte[] iCode, byte[] hash, Scriptable scope) throws IOException, ClassNotFoundException {
+        Script script = (Script) ScriptFileStream.readICode(iCode, hash);
+        return script.exec(cx, scope);
+    }
+
+    public byte[] compileICode(String source, String sourceName, byte[] hash) throws IOException {
+        Script script = cx.compileString(source, sourceName, 0, null);
+        return ScriptFileStream.writeICode(script, hash);
+    }
+
     class PrepareCommand implements Runnable {
         private boolean runAfterPrepared;
 
-        public PrepareCommand(boolean runAfterPrepared) {
+        PrepareCommand(boolean runAfterPrepared) {
             this.runAfterPrepared = runAfterPrepared;
         }
 
@@ -192,7 +250,9 @@ public class ScriptManager {
             scope = initScope(cx);
             handler = new Handler();
             try {
-                compiledScript = cx.compileReader(getScriptReader(), sourceName, 0, null);
+                long time = SystemClock.uptimeMillis();
+                compiledScript = getCompiledScript();
+                Log.d("Script", "Script Compiled in " + (SystemClock.uptimeMillis() - time) + "ms");
             } catch (Exception e) {
                 XApplication.reportError(bindContext.getApplicationContext(), Thread.currentThread(), new SecurityException("Fail to decode and execute the script.", e));
                 return;
@@ -238,7 +298,7 @@ public class ScriptManager {
     }
 
     class Hotfix {
-        public Hotfix(String coreFile, String signFile, byte[] verify, int versionCode) {
+        Hotfix(String coreFile, String signFile, byte[] verify, int versionCode) {
             this.coreFile = coreFile;
             this.signFile = signFile;
             this.verify = verify;
@@ -250,7 +310,7 @@ public class ScriptManager {
         private byte[] verify;
         private int versionCode;
 
-        public InputStream getInputStream() throws IOException {
+        InputStream getInputStream() throws IOException {
             return ScriptFileStream.fromFile(bindContext, coreFile, signFile, verify, versionCode);
         }
     }
