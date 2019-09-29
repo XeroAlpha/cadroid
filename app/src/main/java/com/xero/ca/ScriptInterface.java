@@ -370,6 +370,10 @@ public class ScriptInterface {
 	    return mManager.compileICode(source, sourceName, hash);
     }
 
+    public String getUserID() {
+	    return mPreference.getUserId();
+    }
+
     public static ScriptInterface getInstance() {
 	    return ScriptManager.hasInstance() ? ScriptManager.getInstance().getScriptInterface() : null;
     }
