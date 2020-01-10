@@ -26,8 +26,8 @@ android {
 }
 
 dependencies {
-    implementation files('libs/SaaS_AppAnalytics_Android_SDK_V4.0.30.jar')
-    implementation files('libs/GDTSDK.union.4.80.950.aar')
+    implementation files('libs/SaaS_AppAnalytics_Android_SDK_V4.0.39.jar')
+    implementation files('libs/GDTSDK.unionNormal.4.132.1002.aar')
     implementation 'com.android.support:support-annotations:28.0.0'
     implementation 'org.mozilla:rhino:1.7.11'
     implementation 'net.lingala.zip4j:zip4j:1.3.2'
