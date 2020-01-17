@@ -5,6 +5,7 @@ import android.app.Activity;
 import android.content.Context;
 import android.content.pm.PackageManager;
 import android.os.Build;
+import android.os.Handler;
 import android.view.ViewGroup;
 
 import com.qq.e.ads.splash.SplashAD;
@@ -44,6 +45,7 @@ public class AdProvider implements SplashADListener {
         } else {
             SplashAD ad = new SplashAD(activity, Secret.getGDTAppID(), Secret.getGDTPosID(), this);
             ad.fetchAndShowIn(container);
+            new Handler(activity.getMainLooper()).postDelayed(this::onADDismissed, 10000);
         }
     }
 
