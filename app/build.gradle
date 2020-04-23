@@ -13,9 +13,9 @@ android {
         applicationId "com.xero.ca"
         minSdkVersion 19
         targetSdkVersion 29
-        versionCode 18285
-        versionName "1.2.13"
-        buildConfigField "int", "SHELL_VERSION", "24"
+        versionCode 18375
+        versionName "1.2.14-Beta-4"
+        buildConfigField "int", "SHELL_VERSION", "25"
     }
     buildTypes {
         release {
@@ -26,8 +26,8 @@ android {
 }
 
 dependencies {
-    implementation files('libs/SaaS_AppAnalytics_Android_SDK_V4.0.39.jar')
-    implementation files('libs/GDTSDK.unionNormal.4.132.1002.aar')
+    implementation files('libs/SaaS_AppAnalytics_Android_SDK_V4.0.45.jar')
+    implementation files('libs/GDTSDK.unionNormal.4.191.1061.aar')
     implementation 'com.android.support:support-annotations:28.0.0'
     implementation 'org.mozilla:rhino-runtime:1.7.12'
     implementation 'net.lingala.zip4j:zip4j:1.3.2'

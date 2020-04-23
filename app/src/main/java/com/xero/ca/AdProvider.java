@@ -115,6 +115,9 @@ public class AdProvider implements SplashADListener {
     }
 
     @Override
+    public void onADLoaded(long l) {}
+
+    @Override
     public void onADPresent() {}
 
     @Override
