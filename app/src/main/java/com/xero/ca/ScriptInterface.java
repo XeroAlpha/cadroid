@@ -433,7 +433,7 @@ public class ScriptInterface {
         }
 
         @Override
-        public void onComplete(boolean success, String message) {
+        public void onComplete(AdProvider provider, boolean success, String message) {
             if (mOnlineMode) return;
             mOnlineMode = success;
             mOfflineReason = message;

@@ -1,12 +1,12 @@
 package com.xero.ca;
 
-import android.Manifest;
 import android.app.Activity;
-import android.content.Context;
-import android.content.pm.PackageManager;
-import android.os.Build;
+import android.os.Bundle;
 import android.os.Handler;
+import android.os.SystemClock;
+import android.view.View;
 import android.view.ViewGroup;
+import android.view.accessibility.AccessibilityNodeInfo;
 
 import com.qq.e.ads.splash.SplashAD;
 import com.qq.e.ads.splash.SplashADListener;
@@ -15,46 +15,69 @@ import com.xero.ca.script.AnalyticsPlatform;
 
 import java.lang.ref.WeakReference;
 
-public class AdProvider implements SplashADListener {
+public class AdProvider {
     private static final AdProvider sInstance = new AdProvider();
 
     public static AdProvider getInstance() {
         return sInstance;
     }
 
+    private ADListener mADListener;
+
     private boolean mPaid;
     private boolean mCompleted;
     private boolean mPaused;
     private boolean mDispatchWhenResume;
+    private long mPresentTime;
+    private int mPresentDuration;
+    private boolean mAutoSkip;
     private String mMessage;
     private WeakReference<Activity> mActivity;
-    private OnCompleteListener mListener;
+    private Listener mListener;
+    private OnCompleteListener mOnCompleteListener;
+
+    public AdProvider() {
+        mADListener = new ADListener();
+    }
 
     public void prepare(Activity activity, ViewGroup container) {
+        prepare(activity, container, null);
+    }
+
+    public void prepare(Activity activity, ViewGroup container, View skipView) {
+        prepare(activity, container, skipView, null);
+    }
+
+    public void prepare(Activity activity, ViewGroup container, View skipView, Listener listener) {
         mActivity = new WeakReference<>(activity);
+        mListener = listener;
         mPaused = false;
         mDispatchWhenResume = false;
+        mPresentTime = 0;
+        mPresentDuration = -1;
+        mAutoSkip = false;
         synchronized (this) {
-            mListener = null;
+            mOnCompleteListener = null;
             mCompleted = false;
             mPaid = false;
         }
         Preference pref = Preference.getInstance(activity);
         if (pref.checkFirstRun()) {
-            onADDismissed();
+            mADListener.onADDismissed();
         } else {
-            SplashAD ad = new SplashAD(activity, Secret.getGDTAppID(), Secret.getGDTPosID(), this);
+            SplashAD ad = new SplashAD(activity, skipView, Secret.getGDTAppID(), Secret.getGDTPosID(), mADListener, 0);
             ad.fetchAndShowIn(container);
-            new Handler(activity.getMainLooper()).postDelayed(this::onADDismissed, 10000);
+            skipView.setAccessibilityDelegate(new SkipChecker());
+            new Handler(activity.getMainLooper()).postDelayed(mADListener::onADDismissed, 10000);
         }
     }
 
     public void runAfterComplete(OnCompleteListener listener) {
         synchronized (this) {
             if (mCompleted) {
-                listener.onComplete(mPaid, mMessage);
+                listener.onComplete(this, mPaid, mMessage);
             } else {
-                mListener = listener;
+                mOnCompleteListener = listener;
             }
         }
     }
@@ -65,15 +88,28 @@ public class AdProvider implements SplashADListener {
                 mCompleted = true;
                 mPaid = success;
                 mMessage = message;
-                if (mListener != null) mListener.onComplete(success, message);
+                if (mOnCompleteListener != null) mOnCompleteListener.onComplete(this, success, message);
             }
         }
+    }
+
+    private void dispatchCompleteCheckSkip(boolean success, String message) {
+        if (success && mAutoSkip && mPresentDuration < 3000) {
+            success = false;
+            message = "点击事件校验失败，请检查开发者选项内是否开启了调试点击";
+            reportError(5212, message);
+        }
+        dispatchComplete(success, message);
     }
 
     public boolean isCompleted() {
         synchronized (this) {
             return mCompleted;
         }
+    }
+
+    public int getPresentDuration() {
+        return mPresentDuration;
     }
 
     public void pause() {
@@ -84,7 +120,7 @@ public class AdProvider implements SplashADListener {
         mPaused = false;
         if (mDispatchWhenResume) {
             mDispatchWhenResume = false;
-            dispatchComplete(true, null);
+            dispatchCompleteCheckSkip(true, null);
         }
     }
 
@@ -92,44 +128,86 @@ public class AdProvider implements SplashADListener {
         mActivity = null;
         dispatchComplete(false, null);
         mListener = null;
+        mOnCompleteListener = null;
     }
-
-    @Override
-    public void onADDismissed() {
-        if (mPaused) {
-            mDispatchWhenResume = true;
-        } else {
-            dispatchComplete(true, null);
-        }
-    }
-
-    @Override
-    public void onNoAD(AdError adError) {
-        if (mActivity != null) { // GDT似乎有时会在Activity被destroy后调用此方法
+    
+    private void reportError(int errorCode, String errorMsg) {
+    	if (mActivity != null) { // GDT似乎有时会在Activity被destroy后调用此方法
             Activity activity = mActivity.get();
             if (activity != null) {
-                AnalyticsPlatform.reportAdError(activity, adError.getErrorCode(), adError.getErrorMsg());
+                AnalyticsPlatform.reportAdError(activity, errorCode, errorMsg);
             }
         }
-        dispatchComplete(adError.getErrorCode() >= 6000, adError.getErrorMsg());
     }
 
-    @Override
-    public void onADLoaded(long l) {}
+    class ADListener implements SplashADListener {
 
-    @Override
-    public void onADPresent() {}
+        @Override
+        public void onADDismissed() {
+            mPresentDuration = (int) (SystemClock.uptimeMillis() - mPresentTime);
+            if (mPaused) {
+                mDispatchWhenResume = true;
+            } else {
+                dispatchCompleteCheckSkip(true, null);
+            }
+            if (mListener != null) {
+                mListener.onComplete();
+            }
+        }
 
-    @Override
-    public void onADClicked() {}
+        @Override
+        public void onNoAD(AdError adError) {
+            int errorCode = adError.getErrorCode();
+            boolean adEnabled = errorCode >= 5000;
+            reportError(errorCode, adError.getErrorMsg());
+            dispatchComplete(adEnabled, adError.getErrorMsg());
+        }
 
-    @Override
-    public void onADTick(long l) {}
+        @Override
+        public void onADLoaded(long l) {}
 
-    @Override
-    public void onADExposure() {}
+        @Override
+        public void onADPresent() {
+            mPresentTime = SystemClock.uptimeMillis();
+            if (mListener != null) {
+                mListener.onPresent();
+            }
+        }
+
+        @Override
+        public void onADClicked() {}
+
+        @Override
+        public void onADTick(long l) {
+            if (mListener != null) {
+                mListener.onTick((int) (l / 1000));
+            }
+        }
+
+        @Override
+        public void onADExposure() {}
+
+    }
+
+    class SkipChecker extends View.AccessibilityDelegate {
+
+        @Override
+        public boolean performAccessibilityAction(View host, int action, Bundle args) {
+            if (action == AccessibilityNodeInfo.ACTION_CLICK) { // 被无障碍模拟点击了
+                mAutoSkip = true;
+            }
+            return super.performAccessibilityAction(host, action, args);
+        }
+
+    }
+
+    interface Listener {
+        void onPresent();
+        void onTick(int secondsLeft);
+        void onComplete();
+    }
 
     interface OnCompleteListener {
-        void onComplete(boolean success, String message);
+        void onComplete(AdProvider provider, boolean success, String message);
     }
 }
