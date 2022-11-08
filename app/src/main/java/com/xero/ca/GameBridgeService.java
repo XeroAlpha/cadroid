@@ -15,7 +15,7 @@ import java.util.List;
 public class GameBridgeService extends Service implements Handler.Callback {
     public static WeakReference<GameBridgeService> instance = new WeakReference<>(null);
     private static Callback mCallback;
-    private static List<Message> mQueue = Collections.synchronizedList(new ArrayList<Message>());
+    private static List<Message> mQueue = Collections.synchronizedList(new ArrayList<>());
     private Handler mHandler = new Handler(this);
 
     public static void setCallback(Callback c) {

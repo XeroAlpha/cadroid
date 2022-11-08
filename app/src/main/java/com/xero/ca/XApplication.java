@@ -6,11 +6,12 @@ import android.content.pm.PackageManager;
 import android.os.Environment;
 import android.util.Log;
 
-import com.tendcloud.tenddata.TCAgent;
+import com.tendcloud.tenddata.TalkingDataSDK;
 
 import java.io.FileOutputStream;
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.text.SimpleDateFormat;
 import java.util.Date;
 
 public class XApplication extends Application {
@@ -26,14 +27,14 @@ public class XApplication extends Application {
     }
 
     public static void reportError(Context ctx, Thread t, Throwable e) {
-        TCAgent.onError(ctx, e);
+        TalkingDataSDK.onError(ctx, e);
         Log.e(TAG, t.toString(), e);
         StringWriter s = new StringWriter();
         s.append("Version ").append(getPackageVersion(ctx)).append("\n");
         e.printStackTrace(new PrintWriter(s));
         try {
             PrintWriter fs = new PrintWriter(new FileOutputStream(Environment.getExternalStorageDirectory().getAbsolutePath() + "/com.xero.ca.error.log", true));
-            fs.println("* Error: " + new Date().toLocaleString());
+            fs.println("* Error: " + SimpleDateFormat.getDateTimeInstance().format(new Date()));
             fs.println("FATAL:" + s);
             fs.close();
         } catch (Exception err) {
@@ -45,7 +46,7 @@ public class XApplication extends Application {
     @Override
     public void onCreate() {
         super.onCreate();
-        TCAgent.init(this.getApplicationContext(), Secret.getTDToken(), "default");
+        TalkingDataSDK.init(this.getApplicationContext(), Secret.getTDToken(), "default", "");
         Thread.setDefaultUncaughtExceptionHandler(new ErrorCatcher());
     }
 

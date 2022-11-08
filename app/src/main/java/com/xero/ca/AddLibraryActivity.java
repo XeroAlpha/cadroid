@@ -2,6 +2,7 @@ package com.xero.ca;
 
 import android.app.Activity;
 import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 
 public class AddLibraryActivity extends Activity {
@@ -15,7 +16,9 @@ public class AddLibraryActivity extends Activity {
     private void processIntent() {
         Intent intent = getIntent();
         if (intent == null) return;
-        Intent target = new Intent(ScriptInterface.ACTION_ADD_LIBRARY, intent.getData());
+        Uri data = intent.getData();
+        Intent target = new Intent(ScriptInterface.ACTION_ADD_LIBRARY, data);
+        grantUriPermission(getPackageName(), data, Intent.FLAG_GRANT_READ_URI_PERMISSION);
         ScriptInterface.callIntent(this, target);
     }
 }

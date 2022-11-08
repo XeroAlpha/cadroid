@@ -15,3 +15,30 @@
 #-keepclassmembers class fqcn.of.javascript.interface.for.webview {
 #   public *;
 #}
+
+# TalkingData SDK
+-dontwarn com.tendcloud.tenddata.**
+-keep class com.tendcloud.** {
+    *;
+}
+-keep public class com.tendcloud.** {
+    public protected *;
+}
+
+# Scripting
+-keep @com.xero.ca.script.ScriptObject public class *{
+    public *;
+}
+-keepclassmembers class * {
+    @com.xero.ca.script.ScriptObject public *;
+}
+-keep public class com.xero.ca.R
+-keep public class com.xero.ca.R$* {
+    public *;
+}
+-keep class org.mozilla.** {
+    *;
+}
+-keep public class org.java_websocket.** {
+    public *;
+}

@@ -125,6 +125,7 @@ public class ScriptTileService extends TileService {
                 }
             } else {
                 if (mType == TYPE_CLICK) {
+                    Log.d("CA","Trying to launch service");
                     StartAppCommand command = new StartAppCommand();
                     if (isLocked()) {
                         unlockAndRun(command);

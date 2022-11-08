@@ -1,6 +1,6 @@
 <?xml version='1.0' encoding='utf-8'?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.xero.ca">
+    xmlns:tools="http://schemas.android.com/tools">
 
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.WAKE_LOCK" />
@@ -11,6 +11,10 @@
     <uses-permission android:name="com.android.launcher.permission.INSTALL_SHORTCUT" />
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
 	<uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.MANAGE_EXTERNAL_STORAGE"
+        tools:ignore="ScopedStorage" />
+    <uses-permission android:name="android.permission.QUERY_ALL_PACKAGES"
+        tools:ignore="QueryAllPackagesPermission" />
 
     <!--TalkingData SDK, GDT union SDK-->
     <uses-permission android:name="android.permission.READ_PHONE_STATE" />
@@ -19,19 +23,19 @@
 
     <application
         android:name=".XApplication"
-        android:allowBackup="false"
         android:icon="@mipmap/icon_small"
         android:label="@string/app_name"
         android:theme="@style/AppTheme"
-        android:networkSecurityConfig="@xml/network_security_config">
+        android:requestLegacyExternalStorage="true"
+        tools:targetApi="n">
         <uses-library
             android:name="org.apache.http.legacy"
             android:required="false" />
         <activity
             android:name=".MainActivity"
-            android:label="@string/app_name"
             android:screenOrientation="user"
-            android:theme="@style/AppTheme.Translucent">
+            android:theme="@style/AppTheme.Translucent"
+            android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
@@ -41,36 +45,40 @@
             android:name=".BugReportActivity"
             android:process="com.xero.bugreport"
             android:launchMode="singleInstance"
-            android:excludeFromRecents="true"
-            android:screenOrientation="portrait" />
+            android:excludeFromRecents="true" />
         <activity
             android:name=".AddLibraryActivity"
             android:label="@string/addlib_name"
-            android:theme="@style/AppTheme.Translucent">
+            android:theme="@style/AppTheme.Translucent"
+            android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
                 <action android:name="android.intent.action.EDIT" />
                 <category android:name="android.intent.category.DEFAULT" />
                 <category android:name="android.intent.category.BROWSABLE" />
+                <data android:scheme="content" />
                 <data android:scheme="file" />
-                <data android:mimeType="*/*" />
+                <data android:mimeType="application/json" />
+                <data android:mimeType="text/*" />
+                <data android:mimeType="application/octet-stream" />
                 <data android:host="*" />
-                <data android:pathPattern=".*\.lib" />
             </intent-filter>
         </activity>
         <activity
             android:name=".EditCommandActivity"
             android:label="@string/editcmd_name"
-            android:theme="@style/AppTheme.Translucent">
+            android:theme="@style/AppTheme.Translucent"
+            android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.SEND" />
                 <category android:name="android.intent.category.DEFAULT" />
-                <data android:mimeType="text/plain" />
+                <data android:mimeType="text/*" />
             </intent-filter>
         </activity>
         <activity
             android:name=".UriActionActivity"
-            android:theme="@style/AppTheme.Translucent">
+            android:theme="@style/AppTheme.Translucent"
+            android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
                 <category android:name="android.intent.category.DEFAULT" />
@@ -93,13 +101,13 @@
             android:theme="@style/AppTheme.Translucent" />
         <activity android:name=".SplashActivity"
             android:launchMode="singleTask"
-            android:configChanges="orientation|screenSize|smallestScreenSize|keyboard|keyboardHidden|screenLayout"
-            android:resizeableActivity="false" />
+            android:configChanges="orientation|screenSize|smallestScreenSize|keyboard|keyboardHidden|screenLayout" />
 
         <service android:name=".ScriptService" />
         <service
             android:name=".AccessibilitySvc"
-            android:permission="android.permission.BIND_ACCESSIBILITY_SERVICE">
+            android:permission="android.permission.BIND_ACCESSIBILITY_SERVICE"
+            android:exported="false">
             <intent-filter>
                 <action android:name="android.accessibilityservice.AccessibilityService" />
             </intent-filter>
@@ -107,7 +115,8 @@
                 android:name="android.accessibilityservice"
                 android:resource="@xml/accessible_service_config" />
         </service>
-        <service android:name=".GameBridgeService">
+        <service android:name=".GameBridgeService"
+            android:exported="true">
             <intent-filter>
                 <action android:name="com.xero.ca.GameBridge" />
                 <category android:name="android.intent.category.DEFAULT" />
@@ -118,13 +127,15 @@
             android:name=".ScriptTileService"
             android:label="@string/app_name"
             android:icon="@drawable/tile_icon"
-            android:permission="android.permission.BIND_QUICK_SETTINGS_TILE">
+            android:permission="android.permission.BIND_QUICK_SETTINGS_TILE"
+            android:exported="false">
             <intent-filter>
                 <action android:name="android.service.quicksettings.action.QS_TILE" />
             </intent-filter>
         </service>
 
-        <receiver android:name=".BootReceiver">
+        <receiver android:name=".BootReceiver"
+            android:exported="false">
             <intent-filter>
                 <action android:name="android.intent.action.BOOT_COMPLETED" />
                 <category android:name="android.intent.category.LAUNCHER" />
@@ -136,17 +147,6 @@
             android:authorities="com.xero.ca.UnsafeFileProvider"
             android:exported="false"
             android:grantUriPermissions="true">
-        </provider>
-
-        <!--GDT union SDK-->
-        <provider
-            android:name="android.support.v4.content.FileProvider"
-            android:authorities="${applicationId}.fileprovider"
-            android:exported="false"
-            android:grantUriPermissions="true">
-            <meta-data
-                android:name="android.support.FILE_PROVIDER_PATHS"
-                android:resource="@xml/gdt_file_path" />
         </provider>
     </application>
 </manifest>

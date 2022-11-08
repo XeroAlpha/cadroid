@@ -58,8 +58,9 @@ public class ScriptService extends Service {
             } else if (ACTION_RUN.equals(intent.getAction())) {
                 mManager.prepareScript(this, sourceName, true);
             }
+            startForeground(1, createNotification());
         }
-		return super.onStartCommand(intent, flags, startId);
+        return super.onStartCommand(intent, flags, startId);
 	}
 
     @Override
@@ -93,23 +94,28 @@ public class ScriptService extends Service {
         return mLastIntent;
     }
 
-    public void showNotification() {
+    public Notification createNotification() {
+        int intentFlags = PendingIntent.FLAG_UPDATE_CURRENT;
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+            intentFlags |= PendingIntent.FLAG_IMMUTABLE;
+        }
         Notification.Builder nof = createNotificationBuilder()
                 .setContentTitle("命令助手")
                 .setContentText("正在运行中...")
                 .setSmallIcon(R.mipmap.icon_small)
                 .setLargeIcon(BitmapFactory.decodeResource(getResources(), R.mipmap.icon_small))
-                .setContentIntent(PendingIntent.getService(this, 1, new Intent(this, ScriptActionService.class).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK), PendingIntent.FLAG_UPDATE_CURRENT));
-
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
-            startForeground(1, nof.build());
-        } else {
-            startForeground(1, nof.getNotification());
-        }
-    }
-
-    public void hideNotification() {
-        stopForeground(true);
+                .setContentIntent(
+                        PendingIntent.getService(
+                                this,
+                                1,
+                                new Intent(
+                                        this,
+                                        ScriptActionService.class
+                                ).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK),
+                                intentFlags
+                        )
+                );
+        return nof.build();
     }
 
     @SuppressWarnings("deprecation")

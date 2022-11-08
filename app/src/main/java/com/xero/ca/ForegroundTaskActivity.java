@@ -18,12 +18,7 @@ public class ForegroundTaskActivity extends Activity {
     protected void onCreate(Bundle savedInstanceState) {
         ScriptInterface.onBeginForegroundTask(this, getIntent());
         if (mDelegee == null) {
-            new Handler().post(new Runnable() {
-                @Override
-                public void run() {
-                    finish();
-                }
-            });
+            new Handler().post(this::finish);
         }
         super.onCreate(savedInstanceState);
     }
@@ -83,10 +78,12 @@ public class ForegroundTaskActivity extends Activity {
         mDelegee = delegee;
     }
 
+    @ScriptObject
     public boolean isModal() {
         return mModal;
     }
 
+    @ScriptObject
     public void setModal(boolean modal) {
         mModal = modal;
     }

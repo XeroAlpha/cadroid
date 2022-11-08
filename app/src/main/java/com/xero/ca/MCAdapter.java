@@ -12,6 +12,9 @@ import android.os.Messenger;
 import android.os.RemoteException;
 import android.widget.Toast;
 
+import com.xero.ca.script.ScriptObject;
+
+@ScriptObject
 public class MCAdapter implements ServiceConnection, Handler.Callback {
     private Context mContext;
     private Handler mHandler;
@@ -38,12 +41,7 @@ public class MCAdapter implements ServiceConnection, Handler.Callback {
     }
 
     public void toast(final String str) {
-        mHandler.post(new Runnable() {
-            @Override
-            public void run() {
-                Toast.makeText(mContext, str, Toast.LENGTH_SHORT).show();
-            }
-        });
+        mHandler.post(() -> Toast.makeText(mContext, str, Toast.LENGTH_SHORT).show());
     }
 
     public void connect() {
@@ -53,7 +51,7 @@ public class MCAdapter implements ServiceConnection, Handler.Callback {
             intent.setComponent(new ComponentName("com.xero.ca", "com.xero.ca.GameBridgeService"));
             mContext.bindService(intent, this, Context.BIND_AUTO_CREATE);
         } catch (Exception e) {
-            toast("无法连接至命令助手安卓版\n" + e.toString());
+            toast("无法连接至命令助手安卓版\n" + e);
         }
     }
 

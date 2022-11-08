@@ -2,15 +2,11 @@ package com.xero.ca;
 
 import android.app.Activity;
 import android.os.Bundle;
-import android.os.Handler;
 import android.os.SystemClock;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.accessibility.AccessibilityNodeInfo;
 
-import com.qq.e.ads.splash.SplashAD;
-import com.qq.e.ads.splash.SplashADListener;
-import com.qq.e.comm.util.AdError;
 import com.xero.ca.script.AnalyticsPlatform;
 
 import java.lang.ref.WeakReference;
@@ -61,15 +57,8 @@ public class AdProvider {
             mCompleted = false;
             mPaid = false;
         }
-        Preference pref = Preference.getInstance(activity);
-        if (pref.checkFirstRun()) {
-            mADListener.onADDismissed();
-        } else {
-            SplashAD ad = new SplashAD(activity, skipView, Secret.getGDTAppID(), Secret.getGDTPosID(), mADListener, 0);
-            ad.fetchAndShowIn(container);
-            skipView.setAccessibilityDelegate(new SkipChecker());
-            new Handler(activity.getMainLooper()).postDelayed(mADListener::onADDismissed, 10000);
-        }
+//        Preference pref = Preference.getInstance(activity);
+        mADListener.onADDismissed();
     }
 
     public void runAfterComplete(OnCompleteListener listener) {
@@ -140,9 +129,7 @@ public class AdProvider {
         }
     }
 
-    class ADListener implements SplashADListener {
-
-        @Override
+    class ADListener {
         public void onADDismissed() {
             mPresentDuration = (int) (SystemClock.uptimeMillis() - mPresentTime);
             if (mPaused) {
@@ -155,42 +142,34 @@ public class AdProvider {
             }
         }
 
-        @Override
-        public void onNoAD(AdError adError) {
-            int errorCode = adError.getErrorCode();
-            boolean adEnabled = errorCode >= 5000;
-            reportError(errorCode, adError.getErrorMsg());
-            dispatchComplete(adEnabled, adError.getErrorMsg());
-        }
-
-        @Override
-        public void onADLoaded(long l) {}
-
-        @Override
-        public void onADPresent() {
-            mPresentTime = SystemClock.uptimeMillis();
-            if (mListener != null) {
-                mListener.onPresent();
-            }
-        }
-
-        @Override
-        public void onADClicked() {}
-
-        @Override
-        public void onADTick(long l) {
-            if (mListener != null) {
-                mListener.onTick((int) (l / 1000));
-            }
-        }
-
-        @Override
-        public void onADExposure() {}
-
+//        public void onNoAD(AdError adError) {
+//            int errorCode = adError.getErrorCode();
+//            boolean adEnabled = errorCode >= 5000;
+//            reportError(errorCode, adError.getErrorMsg());
+//            dispatchComplete(adEnabled, adError.getErrorMsg());
+//        }
+//
+//        public void onADLoaded(long l) {}
+//
+//        public void onADPresent() {
+//            mPresentTime = SystemClock.uptimeMillis();
+//            if (mListener != null) {
+//                mListener.onPresent();
+//            }
+//        }
+//
+//        public void onADClicked() {}
+//
+//        public void onADTick(long l) {
+//            if (mListener != null) {
+//                mListener.onTick((int) (l / 1000));
+//            }
+//        }
+//
+//        public void onADExposure() {}
     }
 
     class SkipChecker extends View.AccessibilityDelegate {
-
         @Override
         public boolean performAccessibilityAction(View host, int action, Bundle args) {
             if (action == AccessibilityNodeInfo.ACTION_CLICK) { // 被无障碍模拟点击了
@@ -198,7 +177,6 @@ public class AdProvider {
             }
             return super.performAccessibilityAction(host, action, args);
         }
-
     }
 
     interface Listener {

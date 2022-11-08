@@ -1,11 +1,13 @@
 package com.xero.ca;
 
+import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Handler;
 import android.os.Message;
+import android.util.Log;
 import android.view.KeyEvent;
 
 import com.xero.ca.script.AnalyticsPlatform;
@@ -43,7 +45,6 @@ public class ScriptInterface {
 	private Preference mPreference;
     private Bridge mBridge;
     private CallbackProxy mCallbackProxy;
-    private boolean mIsForeground = false;
     private boolean mOnlineMode = false;
     private String mOfflineReason = null;
 
@@ -56,36 +57,32 @@ public class ScriptInterface {
         mUiHandler = new Handler(mContext.getMainLooper());
         mUiThread = mContext.getMainLooper().getThread();
         mPreference = Preference.getInstance(mContext);
-		mCallbackProxy = new CallbackProxy();
-        if (!mPreference.getHideNotification()) showNotification();
+        mCallbackProxy = new CallbackProxy();
 	}
 
     public static void callIntent(Context ctx, Intent intent) {
         ScriptInterface instance = getInstance();
         if (instance != null) {
+            Log.d("CA", "Pass intent to script: " + intent);
             if (instance.mBridge != null) instance.mBridge.onNewIntent(intent);
         } else {
-            boolean showSplash = !isSubAction(intent.getAction()) && !Preference.getInstance(ctx).getHideSplash();
+            boolean showSplash = !Preference.getInstance(ctx).getHideSplash();
             Intent serviceIntent = new Intent(ctx, ScriptService.class);
             serviceIntent.putExtra(Intent.EXTRA_INTENT, intent);
-            if (showSplash) {
+            Log.d("CA", "Launch service to process intent: " + intent);
+            Log.d("CA", "Source context: " + ctx);
+            if (ctx instanceof Activity && showSplash) {
                 serviceIntent.setAction(ScriptService.ACTION_PREPARE);
                 ctx.startActivity(new Intent(ctx, SplashActivity.class).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK));
             } else {
                 serviceIntent.setAction(ScriptService.ACTION_RUN);
             }
-            ctx.startService(serviceIntent);
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                ctx.startForegroundService(serviceIntent);
+            } else {
+                ctx.startService(serviceIntent);
+            }
         }
-    }
-
-    private static boolean isSubAction(String action) {
-        if (action == null) return false;
-        return action.equals(ACTION_ADD_LIBRARY) ||
-                action.equals(ACTION_START_ON_BOOT) ||
-                action.equals(ACTION_START_FROM_BACKGROUND) ||
-                action.equals(ACTION_START_FROM_QS_TILE) ||
-                action.equals(ACTION_SCRIPT_ACTION) ||
-                action.equals(ACTION_URI_ACTION);
     }
 
     public static boolean onSplashActivityCreate(SplashActivity activity) {
@@ -206,7 +203,9 @@ public class ScriptInterface {
     }
 
     public void quit() {
-	    if (mBindService != null) mBindService.stopSelf();
+	    if (mBindService != null) {
+            mBindService.stopSelf();
+        }
         if (mBindActivity != null) {
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
                 mBindActivity.finishAndRemoveTask();
@@ -232,35 +231,6 @@ public class ScriptInterface {
 
     public Preference getPreference() {
 	    return mPreference;
-    }
-
-    public void setHideNotification(boolean v) {
-        if (mIsForeground && v) {
-            hideNotification();
-        } else if (!mIsForeground && !v) {
-            showNotification();
-        }
-        mPreference.setHideNotification(v);
-    }
-
-    public boolean isForeground() {
-	    return mIsForeground;
-    }
-
-    public void showNotification() {
-        if (mIsForeground) return;
-        mIsForeground = true;
-        if (mBindService != null) {
-            mBindService.showNotification();
-        }
-    }
-
-    public void hideNotification() {
-        if (!mIsForeground) return;
-        mIsForeground = false;
-        if (mBindService != null) {
-            mBindService.hideNotification();
-        }
     }
 
     public AccessibilitySvc getAccessibilitySvc() {
@@ -378,6 +348,7 @@ public class ScriptInterface {
 	    return ScriptManager.hasInstance() ? ScriptManager.getInstance().getScriptInterface() : null;
     }
 
+    @ScriptObject
 	public interface Bridge {
 		boolean applyIntent(Intent intent);
 

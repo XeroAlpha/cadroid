@@ -47,7 +47,7 @@ public class AccessibilitySvc extends AccessibilityService {
 
     @Override
     public void onCreate() {
-        instance = new WeakReference<AccessibilitySvc>(this);
+        instance = new WeakReference<>(this);
         super.onCreate();
         if (mLifeCycleListener != null) mLifeCycleListener.onCreate();
     }

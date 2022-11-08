@@ -10,6 +10,7 @@ import org.mozilla.javascript.Function;
 import org.mozilla.javascript.Kit;
 import org.mozilla.javascript.RhinoException;
 import org.mozilla.javascript.Script;
+import org.mozilla.javascript.ScriptRuntime;
 import org.mozilla.javascript.Scriptable;
 import org.mozilla.javascript.StackStyle;
 import org.mozilla.javascript.WrapFactory;
@@ -22,12 +23,23 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.lang.ref.WeakReference;
+import java.lang.reflect.Field;
 
 public class ScriptManager {
     private static WeakReference<ScriptManager> instance = new WeakReference<>(null);
 
     static {
         RhinoException.setStackStyle(StackStyle.V8);
+        // hack code
+        if (Context.emptyArgs == null) {
+            try {
+                Field field = Context.class.getDeclaredField("emptyArgs");
+                field.setAccessible(true);
+                field.set(null, ScriptRuntime.emptyArgs);
+            } catch (NoSuchFieldException | IllegalAccessException e) {
+                Log.e("CADebug", e.toString());
+            }
+        }
     }
 
     private Context cx = null;

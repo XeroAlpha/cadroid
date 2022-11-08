@@ -1,10 +1,11 @@
 apply plugin: 'com.android.application'
 
 android {
-    compileSdkVersion 29
-    buildToolsVersion '29.0.1'
+    namespace 'com.xero.ca'
+    compileSdkVersion 32
 
     compileOptions {
+        coreLibraryDesugaringEnabled true
         sourceCompatibility 1.8
         targetCompatibility 1.8
     }
@@ -12,29 +13,36 @@ android {
     defaultConfig {
         applicationId "com.xero.ca"
         minSdkVersion 19
-        targetSdkVersion 29
-        versionCode 18375
-        versionName "1.2.14-Beta-4"
-        buildConfigField "int", "SHELL_VERSION", "25"
+        targetSdkVersion 32
+        versionCode 19303
+        versionName "1.2.14-Beta-12"
+        buildConfigField "int", "SHELL_VERSION", "26"
+        multiDexEnabled true
     }
     buildTypes {
-        release {
+        debug {
+            debuggable true
             minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+        release {
+            minifyEnabled true
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
     }
 }
 
 dependencies {
-    implementation files('libs/SaaS_AppAnalytics_Android_SDK_V4.0.45.jar')
-    implementation files('libs/GDTSDK.unionNormal.4.191.1061.aar')
+    coreLibraryDesugaring 'com.android.tools:desugar_jdk_libs:1.1.5'
+
+    implementation files('libs/SaaS_TalkingDataSDK_Android_V5.0.9.jar')
     implementation 'com.android.support:support-annotations:28.0.0'
-    implementation 'org.mozilla:rhino-runtime:1.7.12'
-    implementation 'net.lingala.zip4j:zip4j:1.3.2'
-    implementation 'com.jakewharton.android.repackaged:dalvik-dx:9.0.0_r3'
-    implementation 'org.java-websocket:Java-WebSocket:1.3.9'
+    implementation 'org.mozilla:rhino-runtime:1.7.14'
+    implementation 'net.lingala.zip4j:zip4j:2.11.2'
+    implementation 'com.jakewharton.android.repackaged:dalvik-dx:11.0.0_r3'
+    implementation 'org.java-websocket:Java-WebSocket:1.5.3'
 
     //GDT SDK require
     //noinspection GradleCompatible
-    implementation 'com.android.support:support-v4:28.0.0'
+    //implementation 'com.android.support:support-v4:28.0.0'
 }

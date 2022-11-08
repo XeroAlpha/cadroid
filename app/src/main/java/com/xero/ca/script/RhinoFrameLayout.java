@@ -48,7 +48,6 @@ public class RhinoFrameLayout extends FrameLayout {
     }
 
     @Override
-
     public boolean dispatchKeyEvent(KeyEvent event) {
         int r = mCallback.dispatchKeyEvent(event, this);
         if (r == RETURN_TRUE) {
@@ -85,7 +84,7 @@ public class RhinoFrameLayout extends FrameLayout {
     }
 
     @TargetApi(21)
-	private class RadiusProvider extends ViewOutlineProvider {
+	private static class RadiusProvider extends ViewOutlineProvider {
         float radius;
         int direction;
 
@@ -122,7 +121,7 @@ public class RhinoFrameLayout extends FrameLayout {
         int dispatchTouchEvent(MotionEvent ev, RhinoFrameLayout thisObj);
     }
 
-    private class DefaultCallback implements Callback {
+    private static class DefaultCallback implements Callback {
         @Override
         public int dispatchKeyEvent(KeyEvent event, RhinoFrameLayout thisObj) {
             return RETURN_DEFAULT;
